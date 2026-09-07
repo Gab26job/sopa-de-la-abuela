@@ -1,0 +1,1508 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* El contenido del artifact se inserta dentro de <body>, donde un <meta> puede ignorarse.
+   Lo reponemos en <head> antes del primer layout: sin esto el telefono asume 980px y encoge todo. */
+(function(){
+  var m = document.querySelector('meta[name="viewport"]');
+  if (m && m.parentNode === document.head) return;
+  var n = document.createElement("meta");
+  n.setAttribute("name", "viewport");
+  n.setAttribute("content", "width=device-width, initial-scale=1, viewport-fit=cover");
+  document.head.appendChild(n);
+})();
+</script>
+<title>La Abuela Pregunta</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F1F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101512" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sopa de la Abuela">
+<link rel="apple-touch-icon" href="icono-192.png">
+<link rel="icon" href="icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:wght@400;600&display=swap">
+
+<style>
+:root{
+  --ground:#F1F3EF; --surface:#FCFCFB; --surface-2:#E7EBE5; --surface-3:#DCE2DA;
+  --ink:#16211E; --ink-2:#4C5B57; --ink-3:#7A8880;
+  --line:#D3DAD2; --line-2:#BFC8BE;
+  --cobalt:#1B4FA6; --cobalt-2:#2E67C4; --cobalt-soft:#DDE6F5;
+  --marigold:#E0A32B; --marigold-soft:#F7EBD1;
+  --good:#2F7A55; --good-bg:#DFEDE4;
+  --warn:#9A6410; --warn-bg:#F2E7D2;
+  --on-cobalt:#FCFCFB; --on-marigold:#16211E;
+  --shadow:0 1px 2px rgba(22,33,30,.06), 0 10px 28px -14px rgba(22,33,30,.22);
+  --shadow-up:0 -6px 24px -12px rgba(22,33,30,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101512; --surface:#171E1A; --surface-2:#1F2823; --surface-3:#28332C;
+    --ink:#E7EDE7; --ink-2:#A2B0A8; --ink-3:#78877E;
+    --line:#2B3630; --line-2:#3A4740;
+    --cobalt:#5289DE; --cobalt-2:#6E9DE6; --cobalt-soft:#1D2A3C;
+    --marigold:#B5842A; --marigold-soft:#2E2718;
+    --good:#5FB585; --good-bg:#172A20;
+    --warn:#C7962F; --warn-bg:#2B2416;
+    --on-cobalt:#0C110F; --on-marigold:#0C110F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+    --shadow-up:0 -6px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101512; --surface:#171E1A; --surface-2:#1F2823; --surface-3:#28332C;
+  --ink:#E7EDE7; --ink-2:#A2B0A8; --ink-3:#78877E;
+  --line:#2B3630; --line-2:#3A4740;
+  --cobalt:#5289DE; --cobalt-2:#6E9DE6; --cobalt-soft:#1D2A3C;
+  --marigold:#B5842A; --marigold-soft:#2E2718;
+  --good:#5FB585; --good-bg:#172A20;
+  --warn:#C7962F; --warn-bg:#2B2416;
+  --on-cobalt:#0C110F; --on-marigold:#0C110F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  --shadow-up:0 -6px 24px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{
+  background:var(--ground); color:var(--ink); margin:0;
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.55;
+  -webkit-font-smoothing:antialiased; overscroll-behavior:none;
+}
+h1,h2,h3{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif; margin:0; text-wrap:balance; letter-spacing:-.02em}
+h1{font-weight:800; font-size:clamp(2.1rem,8vw,2.9rem); line-height:1}
+h2{font-weight:800; font-size:1.5rem; line-height:1.1}
+h3{font-weight:600; font-size:1.1rem}
+p{margin:0}
+button{font:inherit; cursor:pointer; border:none; background:none; color:inherit}
+input{font:inherit}
+:focus-visible{outline:3px solid var(--cobalt); outline-offset:2px; border-radius:6px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+
+#app{max-width:560px; margin:0 auto; padding:0 14px; min-height:100dvh; display:flex; flex-direction:column}
+.screen{display:none; flex:1; flex-direction:column}
+.screen.on{display:flex}
+
+/* ---------- shared bits ---------- */
+/* Sin esto, .btn{display:flex} le gana a la regla [hidden] del navegador —misma
+   especificidad, gana la del autor— y un botón marcado como oculto se sigue
+   viendo. El visor de artefactos inyecta esta regla y por eso no se notaba. */
+[hidden]{display:none !important}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  min-height:56px; padding:14px 22px; border-radius:14px;
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:1.08rem;
+  background:var(--cobalt); color:var(--on-cobalt);
+  transition:transform .1s ease, filter .15s ease;
+}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--surface); color:var(--ink); border:1.5px solid var(--line-2)}
+.btn.soft{background:var(--surface-2); color:var(--ink-2); min-height:48px; font-size:.98rem; border-radius:12px}
+.btn.wide{width:100%}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:.68rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3)}
+
+/* ---------- abuela ---------- */
+.abuela{width:44px; height:44px; flex:none; color:var(--cobalt)}
+.abuela.big{width:78px; height:78px}
+.saybar{
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  box-shadow:var(--shadow); min-height:68px;
+}
+.saytext{font-size:1rem; line-height:1.4; color:var(--ink-2)}
+.saytext b{color:var(--ink); font-weight:600}
+
+/* ---------- inicio ---------- */
+#inicio{justify-content:center; gap:28px; padding:36px 0 44px; text-align:center; align-items:center}
+#inicio h1 .accent{color:var(--cobalt)}
+.tagline{color:var(--ink-2); font-size:1.08rem; max-width:30ch}
+.startcard{
+  width:100%; background:var(--surface); border:1px solid var(--line); border-radius:16px;
+  padding:22px 20px; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow); text-align:left;
+}
+/* ---- la sopa del dia ---- */
+.hoycard{border-color:var(--cobalt); box-shadow:var(--shadow), 0 0 0 3px var(--cobalt-soft)}
+.hoyfecha{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:1.45rem; line-height:1.12; color:var(--ink)}
+.hoytxt{font-size:.95rem; color:var(--ink-2); line-height:1.45}
+.semana{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
+.diachip{
+  aspect-ratio:1; border-radius:10px; border:1.5px solid var(--line); background:var(--surface-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  font-family:"IBM Plex Mono",monospace; font-size:.6rem; color:var(--ink-3); line-height:1;
+}
+.diachip b{font-family:"Bricolage Grotesque",sans-serif; font-size:.95rem; font-weight:600; color:var(--ink-2)}
+.diachip[data-estado="hecha"]{background:var(--good-bg); border-color:var(--good)}
+.diachip[data-estado="hecha"] b{color:var(--good)}
+.diachip[data-estado="hoy"]{border-color:var(--cobalt); border-style:dashed; background:var(--surface)}
+.diachip[data-estado="hoy"] b{color:var(--cobalt)}
+/* ---- la cerradura del panel ---- */
+.pinwrap{display:flex; flex-direction:column; gap:20px; align-items:center; width:100%; max-width:290px}
+.pindots{display:flex; gap:15px; height:20px; align-items:center}
+.pindot{
+  width:14px; height:14px; border-radius:50%; border:1.5px solid var(--line-2); background:transparent;
+  transition:background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.pindot.on{background:var(--cobalt); border-color:var(--cobalt); transform:scale(1.12)}
+.pindots.mal .pindot{border-color:var(--warn); background:transparent}
+.pindots.mal{animation:sacudir .4s}
+@keyframes sacudir{0%,100%{transform:translateX(0)} 18%{transform:translateX(-7px)} 38%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 82%{transform:translateX(3px)}}
+.pinpad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%}
+.pinkey{
+  min-height:62px; border-radius:14px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:1.5rem;
+  transition:background .12s ease, transform .1s ease;
+}
+.pinkey:active{background:var(--surface-2); transform:scale(.97)}
+.pinkey.chica{font-size:.92rem; font-weight:600; color:var(--ink-2); background:var(--surface-2)}
+.pinpad[data-off] .pinkey{opacity:.35; pointer-events:none}
+.modepick{display:flex; flex-direction:column; gap:9px}
+.pickgroup{display:flex; flex-direction:column; gap:8px}
+.seg{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.segbtn{
+  min-height:52px; padding:8px 4px; border-radius:11px; border:1.5px solid var(--line);
+  background:var(--surface-2); color:var(--ink-2);
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:1rem;
+  transition:background .14s ease, color .14s ease, border-color .14s ease;
+}
+.segbtn[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt); color:var(--on-cobalt)}
+.segbtn{position:relative}
+.segbtn[data-off]{color:var(--ink-3); border-style:dashed}
+.segbtn .pronto{
+  display:block; font-family:"IBM Plex Mono",monospace; font-style:normal;
+  font-size:.56rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3); margin-top:3px;
+}
+.segpista{font-size:.87rem; color:var(--ink-3); line-height:1.35; min-height:2.4em}
+.segpista b{color:var(--ink-2); font-weight:600}
+.modeopt{
+  display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:12px;
+  border:1.5px solid var(--line); background:var(--surface-2); text-align:left; width:100%;
+}
+.modeopt[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft)}
+.modeopt .dot{width:20px; height:20px; border-radius:50%; border:2px solid var(--line-2); flex:none; margin-top:3px}
+.modeopt[aria-pressed="true"] .dot{border-color:var(--cobalt); background:var(--cobalt); box-shadow:inset 0 0 0 3.5px var(--surface)}
+.modeopt > span:last-child{display:flex; flex-direction:column; gap:3px; min-width:0}
+.modeopt .mt{display:block; font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:1.02rem}
+.modeopt .md{display:block; font-size:.88rem; color:var(--ink-2); line-height:1.4}
+
+/* ---------- juego ---------- */
+#juego{gap:12px; padding:12px 0 18px}
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px}
+.counter{font-family:"IBM Plex Mono",monospace; font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.themepill{
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:.92rem;
+  padding:6px 13px; border-radius:20px; background:var(--marigold-soft); color:var(--warn);
+}
+.iconbtn{width:44px; height:44px; display:grid; place-items:center; border-radius:11px; background:var(--surface-2); color:var(--ink-2); font-size:1.3rem; flex:none}
+
+.modlink{
+  align-self:center; margin-top:4px; padding:10px 14px; background:none; border:0;
+  font-family:"IBM Plex Mono",monospace; font-size:.68rem; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);
+  text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px;
+}
+.modlink:active{color:var(--ink-2)}
+
+/* ---- la compuerta de edad ---- */
+.edadwrap{display:flex; flex-direction:column; gap:4px; width:100%; max-width:320px}
+.edadnum{
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:4.4rem;
+  line-height:1; letter-spacing:-.04em; color:var(--cobalt); text-align:center;
+}
+.edadanos{
+  font-family:"IBM Plex Mono",monospace; font-size:.7rem; font-weight:600;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3);
+  text-align:center; margin:4px 0 14px;
+}
+/* Tirador grande a propósito: es el único control de la pantalla y lo va a usar
+   gente de sesenta años en un teléfono, no un ratón. */
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:44px;
+  background:transparent; cursor:pointer; display:block; margin:0; touch-action:none;
+}
+input[type=range]::-webkit-slider-runnable-track{height:10px; border-radius:6px; background:var(--surface-3)}
+input[type=range]::-moz-range-track{height:10px; border-radius:6px; background:var(--surface-3)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; width:38px; height:38px; margin-top:-14px;
+  border-radius:50%; background:var(--cobalt); border:3px solid var(--surface);
+  box-shadow:0 1px 6px rgba(22,33,30,.3);
+}
+input[type=range]::-moz-range-thumb{
+  width:32px; height:32px; border-radius:50%; background:var(--cobalt);
+  border:3px solid var(--surface); box-shadow:0 1px 6px rgba(22,33,30,.3);
+}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(--cobalt-soft)}
+.edadtope{
+  display:flex; justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--ink-3);
+}
+
+.gridwrap{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:8px; box-shadow:var(--shadow)}
+#grid{
+  display:grid; gap:0; touch-action:none; user-select:none; -webkit-user-select:none;
+  aspect-ratio:1; width:100%;
+}
+.cell{display:grid; place-items:center; position:relative}
+.cell i{
+  position:absolute; inset:2px; border-radius:7px; background:var(--surface-2);
+  transition:background .12s ease;
+}
+.cell span{
+  position:relative; z-index:1;
+  font-family:"IBM Plex Mono",monospace; font-weight:500;
+  font-size:clamp(.95rem,4.4vw,1.35rem); color:var(--ink); line-height:1;
+}
+/* La letra y el hueco entre celdas se ajustan al tamano elegido:
+   con 12x12 la celda cae a ~29px en un telefono y el texto tiene que encoger con ella. */
+#grid[data-lado="8"] .cell span{font-size:clamp(1.1rem,5.6vw,1.55rem)}
+#grid[data-lado="12"] .cell span{font-size:clamp(.76rem,3.4vw,1.1rem)}
+#grid[data-lado="12"] .cell i{inset:1.5px; border-radius:5px}
+.cell.sel i{background:var(--marigold)}
+.cell.sel span{color:var(--on-marigold); font-weight:600}
+.cell.done i{background:var(--cobalt)}
+.cell.done span{color:var(--on-cobalt); font-weight:600}
+.cell.done.sel i{background:var(--cobalt-2)}
+
+.words{display:flex; flex-wrap:wrap; gap:7px}
+.wchip{
+  font-family:"IBM Plex Mono",monospace; font-size:.86rem; font-weight:500;
+  padding:8px 12px; border-radius:9px; background:var(--surface-2); color:var(--ink-2);
+  border:1px solid transparent; transition:all .18s ease;
+}
+.wchip.done{background:var(--cobalt-soft); color:var(--cobalt); border-color:var(--cobalt); text-decoration:line-through; text-decoration-thickness:2px}
+.wchip .es{display:block; font-family:"Source Serif 4",serif; font-size:.82rem; text-decoration:none; color:var(--ink-3); margin-top:2px}
+
+/* ---------- popup ---------- */
+#veil{
+  position:fixed; inset:0; background:rgba(10,14,12,.5); z-index:40;
+  display:none; align-items:flex-end; justify-content:center;
+}
+#veil.on{display:flex}
+@media (min-width:600px){#veil.on{align-items:center}}
+.sheet{
+  width:100%; max-width:560px; background:var(--surface);
+  border-radius:20px 20px 0 0; padding:22px 18px calc(22px + env(safe-area-inset-bottom));
+  box-shadow:var(--shadow-up); display:flex; flex-direction:column; gap:15px;
+  animation:rise .22s cubic-bezier(.2,.8,.3,1);
+}
+@media (min-width:600px){.sheet{border-radius:20px; margin:0 14px}}
+@keyframes rise{from{transform:translateY(22px); opacity:0} to{transform:none; opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none} *{transition:none !important}}
+.qhead{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.qword{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:1.75rem; letter-spacing:-.01em}
+.qbadge{font-family:"IBM Plex Mono",monospace; font-size:.65rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:4px 8px; border-radius:5px; background:var(--marigold-soft); color:var(--warn)}
+.qdef{font-size:1.02rem; color:var(--ink-2); line-height:1.5; min-height:3em}
+.langsw{display:flex; gap:3px; padding:3px; background:var(--surface-2); border-radius:9px; flex:none}
+.langsw button{
+  padding:6px 11px; border-radius:7px; min-height:34px;
+  font-family:"IBM Plex Mono",monospace; font-size:.7rem; font-weight:600;
+  letter-spacing:.06em; color:var(--ink-3);
+}
+.langsw button[aria-pressed="true"]{background:var(--surface); color:var(--cobalt); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.repaso{display:flex; flex-direction:column; gap:14px; width:100%; text-align:left}
+.repbloc{display:flex; flex-direction:column; gap:7px}
+.reptit{
+  font-family:"IBM Plex Mono",monospace; font-size:.64rem; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; display:flex; align-items:center; gap:7px;
+}
+.reptit.gano{color:var(--good)} .reptit.costo{color:var(--warn)}
+.repchips{display:flex; flex-wrap:wrap; gap:6px}
+.repchip{
+  display:flex; align-items:baseline; gap:6px; padding:7px 11px; border-radius:9px;
+  font-size:.86rem; line-height:1.25; background:var(--surface-2);
+}
+.repchip b{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:.84rem; color:var(--ink)}
+.repchip span{color:var(--ink-3)}
+.repchip.gano{background:var(--good-bg)} .repchip.gano b{color:var(--good)}
+.repchip.costo{background:var(--warn-bg)} .repchip.costo b{color:var(--warn)}
+.qask{display:flex; align-items:center; gap:10px; color:var(--ink-3); font-size:.94rem}
+#ans{
+  width:100%; min-height:58px; padding:15px 16px; border-radius:13px;
+  border:2px solid var(--line-2); background:var(--surface-2); color:var(--ink);
+  font-family:"IBM Plex Mono",monospace; font-size:1.1rem;
+}
+#ans::placeholder{color:var(--ink-3)}
+#ans:focus{outline:none; border-color:var(--cobalt); background:var(--surface)}
+.qrow{display:flex; gap:10px}
+.qrow .btn{flex:1}
+.verdict{
+  padding:15px 16px; border-radius:13px; display:flex; gap:11px; align-items:flex-start;
+  font-size:1rem; line-height:1.45;
+}
+.verdict.ok{background:var(--good-bg); color:var(--good)}
+.verdict.near{background:var(--warn-bg); color:var(--warn)}
+.verdict.miss{background:var(--surface-2); color:var(--ink-2)}
+.verdict b{font-weight:600}
+.verdict .sol{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--ink)}
+
+/* ---------- fin de sopa ---------- */
+#fin{justify-content:center; align-items:center; gap:24px; text-align:center; padding:40px 0}
+.tally{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.tstat{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:14px 18px; min-width:96px}
+.tstat .k{font-family:"IBM Plex Mono",monospace; font-size:.62rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.tstat .v{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:1.9rem; line-height:1.1; font-variant-numeric:tabular-nums}
+.finbtns{display:flex; flex-direction:column; gap:11px; width:100%; max-width:340px}
+
+/* ---------- cierre + moderador ---------- */
+#cierre{justify-content:center; align-items:center; gap:22px; text-align:center; padding:40px 0}
+#mod{gap:16px; padding:20px 0 40px}
+.modcard{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px}
+.field{display:flex; flex-direction:column; gap:6px}
+.field label{font-family:"IBM Plex Mono",monospace; font-size:.66rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.field input{min-height:48px; padding:11px 13px; border-radius:11px; border:1.5px solid var(--line-2); background:var(--surface-2); color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:.95rem}
+.kv{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid var(--line); font-size:.92rem}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:var(--ink-2)}
+.kv span:last-child{font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums; text-align:right}
+.dump{
+  background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:11px;
+  font-family:"IBM Plex Mono",monospace; font-size:.68rem; line-height:1.5; color:var(--ink-2);
+  max-height:190px; overflow:auto; white-space:pre-wrap; word-break:break-all;
+}
+.note{font-size:.86rem; color:var(--ink-3); line-height:1.5}
+.protocol{margin:0; padding-left:20px; color:var(--ink-2); font-size:.92rem; line-height:1.6}
+.protocol li{margin-bottom:6px}
+.protocol b{color:var(--ink); font-weight:600}
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(10px);
+  background:var(--ink); color:var(--ground); padding:11px 17px; border-radius:11px;
+  font-family:"IBM Plex Mono",monospace; font-size:.82rem; z-index:60;
+  opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+}
+#toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ab" viewBox="0 0 48 48">
+  <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="24" cy="7.5" r="4.2"/>
+    <path d="M9.5 27a14.5 14.5 0 0 1 29 0"/>
+    <path d="M10 27v3.5a14 14 0 0 0 28 0V27"/>
+    <circle cx="17.6" cy="27.4" r="4.4"/>
+    <circle cx="30.4" cy="27.4" r="4.4"/>
+    <path d="M22 27.4h4"/>
+    <path d="M20.4 36.2a5.6 5.6 0 0 0 7.2 0"/>
+  </g>
+</symbol></svg>
+
+<div id="app">
+
+  <!-- ============ LA EDAD ============ -->
+  <div class="screen" id="edadg">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <h2>¿Cuántos años tienes?</h2>
+      <p class="tagline">Es para saber qué sopa ponerte, mi amor. Queda en este teléfono.</p>
+    </div>
+    <div class="edadwrap">
+      <div class="edadnum" id="edadNum">30</div>
+      <div class="edadanos">años</div>
+      <input type="range" id="edadRango" min="5" max="95" step="1" value="30" aria-label="Tu edad">
+      <div class="edadtope"><span>5</span><span>95</span></div>
+    </div>
+    <button class="btn wide" id="edadListo" style="max-width:320px">Listo</button>
+  </div>
+
+  <!-- ============ INICIO ============ -->
+  <div class="screen on" id="inicio">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <h1>Sopa de<br>la <span class="accent">Abuela</span></h1>
+      <p class="tagline">Busca las palabras en inglés. La abuela te pregunta qué significan.</p>
+    </div>
+    <div class="startcard hoycard" id="cardHoy">
+      <div class="eyebrow">La sopa de hoy</div>
+      <div class="hoyfecha" id="hoyFecha">—</div>
+      <p class="hoytxt" id="hoyTexto">Una sola por día. Se hace en un ratito.</p>
+      <button class="btn wide" id="jugarHoy">Jugar la sopa de hoy</button>
+      <button class="btn soft wide" id="compartirHoy" hidden>Contar cómo me fue</button>
+      <div class="semana" id="semana"></div>
+      <p class="note">Si te perdiste alguna, las últimas siete siguen ahí.</p>
+    </div>
+
+    <div class="startcard">
+      <p class="note">La abuela te pregunta apenas encuentras cada palabra. Si prefieres jugar tranquila —encontrar todo primero y repasar al final— cámbialo en <b>⚙ Configuración</b>, arriba de la sopa.</p>
+
+      <div class="pickgroup">
+        <div class="eyebrow">Cuánto inglés sabes</div>
+        <div class="seg" id="segNivel">
+          <button class="segbtn" data-nivel="facil" data-off="1">Poco<i class="pronto">pronto</i></button>
+          <button class="segbtn" data-nivel="medio" aria-pressed="true">Algo</button>
+          <button class="segbtn" data-nivel="dificil" data-off="1">Bastante<i class="pronto">pronto</i></button>
+        </div>
+        <p class="segpista" id="pistaNivel"></p>
+      </div>
+
+      <div class="pickgroup">
+        <div class="eyebrow">De qué tamaño la quieres</div>
+        <div class="seg" id="segTamano">
+          <button class="segbtn" data-tamano="chica" data-off="1">Chica<i class="pronto">pronto</i></button>
+          <button class="segbtn" data-tamano="mediana" aria-pressed="true">Mediana</button>
+          <button class="segbtn" data-tamano="grande" data-off="1">Grande<i class="pronto">pronto</i></button>
+        </div>
+        <p class="segpista" id="pistaTamano"></p>
+      </div>
+
+      <button class="btn wide" id="start">Empezar</button>
+    </div>
+
+    <button class="btn soft wide" id="instalar" hidden style="max-width:340px">Tener la sopa en el teléfono</button>
+    <button class="modlink" id="abrirMod">Moderador</button>
+  </div>
+
+  <!-- ============ JUEGO ============ -->
+  <div class="screen" id="juego">
+    <div class="topbar">
+      <span class="counter" id="sopaN">Sopa 1</span>
+      <span class="themepill" id="tema">La cocina</span>
+      <div style="display:flex;gap:8px">
+        <button class="iconbtn" id="config" aria-label="Configuración">⚙</button>
+        <button class="iconbtn" id="salir" aria-label="Volver al inicio">←</button>
+      </div>
+    </div>
+    <div class="saybar">
+      <svg class="abuela" aria-hidden="true"><use href="#ab"/></svg>
+      <p class="saytext" id="say">Busca estas seis, mi amor. No hay apuro.</p>
+    </div>
+    <div class="gridwrap"><div id="grid"></div></div>
+    <div class="words" id="words"></div>
+  </div>
+
+  <!-- ============ FIN DE SOPA ============ -->
+  <div class="screen" id="fin">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+      <h2 id="finTitle">Terminaste la sopa</h2>
+      <p class="tagline" id="finSay">¿Otra? Todavía tengo agua caliente.</p>
+    </div>
+    <div class="tally" id="tally"></div>
+    <div class="finbtns">
+      <button class="btn wide" id="compartirFin" hidden>Contar cómo me fue</button>
+      <button class="btn wide" id="again">Otra sopa</button>
+      <button class="btn ghost wide" id="stop">Volver al inicio</button>
+    </div>
+    <div class="repaso" id="repaso"></div>
+  </div>
+
+  <!-- ============ LA CERRADURA ============ -->
+  <div class="screen" id="llave">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <h2 id="llaveTitulo">La cocina</h2>
+      <p class="tagline" id="llaveSay">Por acá no, mi amor. Esta parte es para el que toma notas.</p>
+    </div>
+    <div class="pinwrap">
+      <div class="pindots" id="pinDots" role="status" aria-label="Clave de cuatro cifras"></div>
+      <div class="pinpad" id="pinPad">
+        <button class="pinkey" data-k="1">1</button>
+        <button class="pinkey" data-k="2">2</button>
+        <button class="pinkey" data-k="3">3</button>
+        <button class="pinkey" data-k="4">4</button>
+        <button class="pinkey" data-k="5">5</button>
+        <button class="pinkey" data-k="6">6</button>
+        <button class="pinkey" data-k="7">7</button>
+        <button class="pinkey" data-k="8">8</button>
+        <button class="pinkey" data-k="9">9</button>
+        <button class="pinkey chica" data-k="salir">Salir</button>
+        <button class="pinkey" data-k="0">0</button>
+        <button class="pinkey chica" data-k="borrar" aria-label="Borrar">Borrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODERADOR ============ -->
+  <div class="screen" id="mod">
+    <div class="eyebrow">Panel de moderador · Fase 1</div>
+    <div class="modcard">
+      <div class="field">
+        <label for="pid">Participante</label>
+        <input id="pid" placeholder="P01" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="modepick">
+        <button class="modeopt" data-fmode="tranquila" aria-pressed="false"><span class="dot"></span><span><span class="mt">Asignar: tranquila</span></span></button>
+        <button class="modeopt" data-fmode="pregunta" aria-pressed="false"><span class="dot"></span><span><span class="mt">Asignar: pregunta</span></span></button>
+      </div>
+    </div>
+
+    <div class="modcard">
+      <div class="eyebrow">La métrica</div>
+      <div id="metrics"></div>
+    </div>
+
+    <div class="modcard">
+      <div class="eyebrow">Protocolo de sesión</div>
+      <ol class="protocol">
+        <li>Asigna el modo <b>antes</b> de entregar el teléfono. Alterna entre participantes.</li>
+        <li>Di solo esto: «Juega lo que quieras. Cuando te aburras, para.» <b>Nunca pidas otra sopa.</b></li>
+        <li>No ayudes ni expliques nada, salvo que se trabe más de un minuto.</li>
+        <li>Anota en voz alta lo que diga sin que le preguntes. Eso vale más que el log.</li>
+        <li>Al terminar, pregunta solo dos cosas: qué le gustó y qué le molestó.</li>
+      </ol>
+    </div>
+
+    <div class="modcard">
+      <div class="eyebrow">Datos de la sesión</div>
+      <div class="dump" id="dump">—</div>
+      <button class="btn soft wide" id="copy">Copiar al portapapeles</button>
+      <button class="btn soft wide" id="dl">Descargar JSON</button>
+      <button class="btn soft wide" id="reset">Borrar y empezar sesión nueva</button>
+      <p class="note">Los datos viven solo en este teléfono. Cópialos o descárgalos antes de pasarle el aparato a la siguiente persona.</p>
+    </div>
+    <div class="modcard">
+      <div class="eyebrow">La clave</div>
+      <p class="note">El panel se cierra solo al volver al juego: no hace falta acordarse de cerrarlo antes de entregar el teléfono. La clave de fábrica está en el LEEME — cambiala antes de la primera sesión y anotala donde no se pierda. Si se olvida, se vuelve a la de fábrica borrando los datos del sitio, y eso también borra la sesión.</p>
+      <button class="btn soft wide" id="cambiarClave">Cambiar la clave</button>
+    </div>
+    <button class="btn ghost wide" id="backGame">Volver al juego</button>
+  </div>
+</div>
+
+<div id="veil"><div class="sheet" id="sheet"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const CORPUS = {"temas":{"cocina":"La cocina","casa":"La casa","cuerpo":"El cuerpo","ropa":"La ropa","comida":"La comida","familia":"La familia","verbos":"Cosas que hacemos","sentimientos":"Cómo nos sentimos","tiempo":"El tiempo y los días","calle":"La calle"},"entradas":[{"w":"kettle","d":"A metal container with a lid and a spout, used for boiling water.","ds":"Recipiente de metal con tapa y pico que sirve para hervir agua.","l":"A2","t":"cocina","a":["tetera","pava","hervidor","caldera","calentador de agua"],"e":"She put the kettle on for tea."},{"w":"spoon","d":"A tool with a round end, used for eating soup or stirring.","ds":"Utensilio con un extremo redondo y hondo, para tomar líquidos o revolver.","l":"A1","t":"cocina","a":["cuchara","cucharita"],"e":"He stirred the coffee with a spoon."},{"w":"fork","d":"A tool with points at the end, used for picking up food.","ds":"Utensilio con púas en la punta, para pinchar la comida.","l":"A1","t":"cocina","a":["tenedor","trinche"],"e":"Use your fork, not your fingers."},{"w":"knife","d":"A tool with a sharp blade, used for cutting.","ds":"Utensilio con hoja afilada que sirve para cortar.","l":"A1","t":"cocina","a":["cuchillo","cuchilla"],"e":"The knife is very sharp."},{"w":"plate","d":"A flat round dish that you put food on.","ds":"Pieza redonda y plana sobre la que se sirve la comida.","l":"A1","t":"cocina","a":["plato"],"e":"She washed every plate by hand."},{"w":"bowl","d":"A deep round dish for soup, cereal or fruit.","ds":"Recipiente redondo y hondo para caldos, cereal o fruta.","l":"A1","t":"cocina","a":["tazon","bol","cuenco","plato hondo","pocillo"],"e":"He ate a bowl of soup."},{"w":"oven","d":"The closed part of a cooker where you bake food.","ds":"Parte cerrada de la cocina donde se hornean los alimentos.","l":"A2","t":"cocina","a":["horno"],"e":"The bread is in the oven."},{"w":"fridge","d":"A cold machine that keeps food fresh.","ds":"Aparato frío que mantiene frescos los alimentos.","l":"A1","t":"cocina","a":["refrigerador","nevera","heladera","refri","frigorifico"],"e":"Put the milk in the fridge."},{"w":"sink","d":"A basin with taps where you wash dishes or hands.","ds":"Pila con grifo donde se lava la loza o las manos.","l":"A2","t":"cocina","a":["fregadero","lavaplatos","lavabo","pileta","lavamanos"],"e":"The dishes are in the sink."},{"w":"towel","d":"A piece of cloth used for drying things.","ds":"Pieza de tejido que sirve para secar.","l":"A1","t":"cocina","a":["toalla","paño","trapo","repasador"],"e":"Dry your hands on the towel."},{"w":"apron","d":"A piece of cloth worn over clothes to keep them clean while cooking.","ds":"Prenda que se pone encima de la ropa para no ensuciarla al cocinar.","l":"A2","t":"cocina","a":["delantal","mandil"],"e":"Grandma always wore a blue apron."},{"w":"stove","d":"The part of a kitchen where you heat pots and pans.","ds":"Aparato con quemadores donde se calientan las ollas.","l":"A2","t":"cocina","a":["estufa","cocina","hornalla","fogon","anafe"],"e":"The pot is on the stove."},{"w":"tray","d":"A flat object used for carrying plates and cups.","ds":"Pieza plana con bordes para llevar platos y tazas.","l":"A2","t":"cocina","a":["bandeja","charola","azafate"],"e":"She carried the tea on a tray."},{"w":"mug","d":"A large cup with a handle, used for hot drinks.","ds":"Recipiente grande con asa para bebidas calientes.","l":"A1","t":"cocina","a":["taza","tarro","pocillo","jarro"],"e":"He drank from a big mug."},{"w":"pan","d":"A shallow metal container used for frying food.","ds":"Recipiente de metal poco hondo para freír.","l":"A1","t":"cocina","a":["sarten","paila","cacerola"],"e":"Heat the oil in the pan."},{"w":"pot","d":"A deep round container used for cooking soup or stew.","ds":"Recipiente hondo y redondo para cocinar caldos o guisos.","l":"A1","t":"cocina","a":["olla","cacerola","cazuela","perol"],"e":"There is soup in the pot."},{"w":"cup","d":"A small container with a handle, used for drinking.","ds":"Recipiente pequeño con asa para beber.","l":"A1","t":"cocina","a":["taza","pocillo"],"e":"A cup of coffee, please."},{"w":"jar","d":"A glass container with a wide mouth and a lid.","ds":"Envase de vidrio de boca ancha con tapa.","l":"A2","t":"cocina","a":["frasco","tarro","bote","pote"],"e":"She keeps sugar in a glass jar."},{"w":"lid","d":"The cover of a pot, jar or box.","ds":"Pieza que cubre y cierra una olla o un envase.","l":"A2","t":"cocina","a":["tapa","tapadera"],"e":"Put the lid on the pot."},{"w":"jug","d":"A container with a handle for pouring water or juice.","ds":"Recipiente con asa para servir agua o jugo.","l":"A2","t":"cocina","a":["jarra","jarron","pichel"],"e":"Fill the jug with water."},{"w":"whisk","d":"A kitchen tool made of wire loops, used for beating eggs or cream.","ds":"Utensilio de alambres curvos para batir huevos o crema.","l":"B1","t":"cocina","a":["batidor","batidora","varillas"],"e":"Beat the eggs with a whisk."},{"w":"grater","d":"A kitchen tool with sharp holes, used for cutting food into small pieces.","ds":"Utensilio con agujeros filosos para desmenuzar alimentos.","l":"B1","t":"cocina","a":["rallador"],"e":"Use the grater for the cheese."},{"w":"sieve","d":"A tool with a net, used for separating solids from liquids.","ds":"Utensilio con una malla que separa lo sólido del líquido.","l":"B1","t":"cocina","a":["colador","cedazo","tamiz","coladera"],"e":"Pass the flour through a sieve."},{"w":"ladle","d":"A large deep spoon with a long handle, used for serving soup.","ds":"Cuchara grande y honda de mango largo para servir caldo.","l":"B1","t":"cocina","a":["cucharon","cazo","cucharon de sopa"],"e":"She served the soup with a ladle."},{"w":"simmer","d":"To cook gently in liquid just below boiling point.","ds":"Cocinar despacio en líquido, justo por debajo del hervor.","l":"B1","t":"cocina","a":["hervir a fuego lento","cocer a fuego lento","hervir suave"],"e":"Let the stew simmer for an hour."},{"w":"saucer","d":"A small flat dish that a cup stands on.","ds":"Disco pequeño con un hueco al centro donde se apoya la taza.","l":"B1","t":"cocina","a":["platillo","plato pequeño"],"e":"She placed the cup on its saucer."},{"w":"rinse","d":"To wash something quickly with clean water.","ds":"Pasar agua limpia por algo para quitarle el jabón.","l":"B1","t":"cocina","a":["enjuagar","aclarar","lavar"],"e":"Rinse the plates before drying."},{"w":"skillet","d":"A heavy flat pan with a long handle, used for frying eggs or meat.","ds":"Recipiente plano de mango largo donde se frien huevos o carne.","l":"B2","t":"cocina","a":["sarten","paila","sarten de hierro"],"e":"She fried the eggs in a hot skillet."},{"w":"platter","d":"A large flat dish used for serving food at the table.","ds":"Plato grande y llano en que se lleva la comida a la mesa.","l":"B2","t":"cocina","a":["fuente","platon","charola grande"],"e":"He carried the meat on a big platter."},{"w":"cutlery","d":"The knives, forks and spoons used for eating.","ds":"Conjunto de piezas de metal con que se lleva la comida a la boca.","l":"B2","t":"cocina","a":["cubiertos","cuberteria","servicio de mesa"],"e":"Put the cutlery on the table, please."},{"w":"peeler","d":"A small tool used to take the skin off potatoes or apples.","ds":"Herramienta chica para quitarle la piel a la papa o la manzana.","l":"B2","t":"cocina","a":["pelador","pelapapas","pelapatatas","mondador"],"e":"Use the peeler, it is faster."},{"w":"door","d":"The part of a room or building that you open to go in or out.","ds":"Pieza que se abre para entrar o salir de un lugar.","l":"A1","t":"casa","a":["puerta"],"e":"Please close the door."},{"w":"window","d":"An opening in a wall with glass, that lets in light.","ds":"Hueco en la pared con vidrio que deja entrar la luz.","l":"A1","t":"casa","a":["ventana","ventanal"],"e":"Open the window, it is hot."},{"w":"roof","d":"The covering on top of a building.","ds":"Cubierta que va en lo alto de una construcción.","l":"A2","t":"casa","a":["techo","tejado","azotea"],"e":"The rain fell on the roof."},{"w":"floor","d":"The flat surface you walk on inside a building.","ds":"Superficie plana que se pisa dentro de una casa.","l":"A1","t":"casa","a":["piso","suelo","planta"],"e":"She swept the kitchen floor."},{"w":"wall","d":"A flat side of a room or building.","ds":"Cara vertical que cierra o divide un espacio.","l":"A1","t":"casa","a":["pared","muro","tabique"],"e":"There is a photo on the wall."},{"w":"chair","d":"A seat with a back, for one person.","ds":"Asiento con respaldo para una sola persona.","l":"A1","t":"casa","a":["silla"],"e":"Sit on the chair, please."},{"w":"table","d":"A piece of furniture with a flat top and legs.","ds":"Mueble de superficie plana sostenido por patas.","l":"A1","t":"casa","a":["mesa"],"e":"Put the plates on the table."},{"w":"lamp","d":"A device that gives light.","ds":"Aparato que sirve para alumbrar un cuarto.","l":"A1","t":"casa","a":["lampara","luz","farol","velador"],"e":"Turn on the lamp, it is dark."},{"w":"stairs","d":"A set of steps that lead from one floor to another.","ds":"Serie de peldaños que llevan de un nivel a otro.","l":"A2","t":"casa","a":["escalera","escaleras","gradas"],"e":"She walked slowly up the stairs."},{"w":"garden","d":"A piece of land next to a house where plants grow.","ds":"Terreno junto a la casa donde crecen las plantas.","l":"A1","t":"casa","a":["jardin","huerta","patio"],"e":"He grows tomatoes in the garden."},{"w":"room","d":"A separate space inside a building, with walls around it.","ds":"Espacio separado dentro de una vivienda, cerrado por paredes.","l":"A1","t":"casa","a":["cuarto","habitacion","pieza","recamara","sala"],"e":"My room is very small."},{"w":"mirror","d":"A piece of glass in which you can see yourself.","ds":"Superficie de vidrio en la que uno se ve reflejado.","l":"A2","t":"casa","a":["espejo"],"e":"She looked in the mirror."},{"w":"shelf","d":"A flat board on a wall where you put books or jars.","ds":"Tabla horizontal en la pared donde se apoyan cosas.","l":"A2","t":"casa","a":["estante","repisa","anaquel","balda"],"e":"The jam is on the top shelf."},{"w":"broom","d":"A brush with a long handle, used for sweeping the floor.","ds":"Utensilio de mango largo con cerdas para barrer.","l":"A2","t":"casa","a":["escoba"],"e":"She swept the floor with a broom."},{"w":"pillow","d":"A soft bag that you rest your head on in bed.","ds":"Bolsa blanda donde se apoya la cabeza al dormir.","l":"A2","t":"casa","a":["almohada","almohadon","cojin"],"e":"This pillow is too soft."},{"w":"blanket","d":"A thick cover that keeps you warm in bed.","ds":"Pieza gruesa de abrigo que se pone sobre la cama.","l":"A2","t":"casa","a":["manta","cobija","frazada","colcha"],"e":"She made a blanket for the baby."},{"w":"drawer","d":"A box that slides in and out of a piece of furniture.","ds":"Caja que entra y sale de un mueble.","l":"A2","t":"casa","a":["cajon","gaveta"],"e":"The spoons are in the drawer."},{"w":"clock","d":"A machine on a wall or table that shows the time.","ds":"Aparato que marca la hora.","l":"A1","t":"casa","a":["reloj","reloj de pared"],"e":"The clock says nine o'clock."},{"w":"key","d":"A small metal object used for opening a lock.","ds":"Pieza pequeña de metal que abre una cerradura.","l":"A1","t":"casa","a":["llave"],"e":"I lost the key to the front door."},{"w":"bed","d":"A piece of furniture that you sleep on.","ds":"Mueble sobre el que se duerme.","l":"A1","t":"casa","a":["cama","lecho"],"e":"The children are in bed."},{"w":"attic","d":"A room or space just under the roof of a house.","ds":"Espacio de una casa que queda justo debajo del techo.","l":"B1","t":"casa","a":["atico","desvan","buhardilla","altillo"],"e":"The old photos are in the attic."},{"w":"basement","d":"A room or floor below the ground level of a building.","ds":"Piso de una construcción que queda bajo el nivel del suelo.","l":"B1","t":"casa","a":["sotano"],"e":"He keeps his tools in the basement."},{"w":"fence","d":"A structure of wood or wire that surrounds a piece of land.","ds":"Cerramiento de madera o alambre que rodea un terreno.","l":"B1","t":"casa","a":["cerca","valla","reja","cerco"],"e":"The dog jumped over the fence."},{"w":"curtain","d":"A piece of cloth hung over a window.","ds":"Tela que cuelga delante de una ventana.","l":"B1","t":"casa","a":["cortina"],"e":"Close the curtain, the sun is strong."},{"w":"carpet","d":"A thick woven covering for a floor.","ds":"Tejido grueso que cubre el piso.","l":"B1","t":"casa","a":["alfombra","tapete","moqueta"],"e":"She beat the carpet in the yard."},{"w":"hallway","d":"A passage inside a house that leads to the rooms.","ds":"Paso largo y angosto que comunica los cuartos.","l":"B1","t":"casa","a":["pasillo","corredor","zaguan"],"e":"The bedrooms are down the hallway."},{"w":"ceiling","d":"The upper inside surface of a room.","ds":"Superficie interior que cierra un cuarto por arriba.","l":"B1","t":"casa","a":["techo","cielo raso"],"e":"There is a crack in the ceiling."},{"w":"cupboard","d":"A piece of furniture with shelves and doors, for storing plates or food.","ds":"Mueble con puertas y estantes donde se guardan platos o comida.","l":"B2","t":"casa","a":["alacena","aparador","gabinete","armario de cocina"],"e":"The plates are in the cupboard."},{"w":"laundry","d":"The clothes that need washing, or the room where they are washed.","ds":"El cuarto donde se lava, o lo que espera para ser lavado.","l":"B2","t":"casa","a":["lavadero","lavanderia","ropa sucia","colada"],"e":"She does the laundry on Sundays."},{"w":"faucet","d":"The part you turn to make water come out of a pipe.","ds":"Pieza que se abre para que salga el agua.","l":"B2","t":"casa","a":["canilla","grifo","llave de agua","pila"],"e":"Close the faucet, it is dripping."},{"w":"doorway","d":"The open space in a wall where you walk into a room.","ds":"Hueco en la pared por donde se pasa a un cuarto.","l":"B2","t":"casa","a":["umbral","vano de la puerta","entrada"],"e":"She stood in the doorway and waited."},{"w":"hand","d":"The part of the body at the end of the arm, with fingers.","ds":"Parte del cuerpo con dedos que está al final del brazo.","l":"A1","t":"cuerpo","a":["mano"],"e":"Wash your hands before you eat."},{"w":"head","d":"The part of the body above the neck.","ds":"Parte del cuerpo que va por encima del cuello.","l":"A1","t":"cuerpo","a":["cabeza"],"e":"My head hurts a little."},{"w":"hair","d":"The soft thread-like covering that grows on your head.","ds":"Lo que crece en la cabeza en forma de hebras finas.","l":"A1","t":"cuerpo","a":["pelo","cabello"],"e":"Her hair is completely white."},{"w":"mouth","d":"The opening in the face used for eating and speaking.","ds":"Abertura de la cara con la que se come y se habla.","l":"A1","t":"cuerpo","a":["boca"],"e":"Open your mouth, please."},{"w":"nose","d":"The part of the face used for smelling and breathing.","ds":"Parte de la cara con la que se huele y se respira.","l":"A1","t":"cuerpo","a":["nariz","narices"],"e":"His nose is cold."},{"w":"tooth","d":"One of the hard white things in your mouth, used for biting.","ds":"Cada una de las piezas duras y blancas con las que se mastica.","l":"A2","t":"cuerpo","a":["diente","muela"],"e":"The child lost a tooth."},{"w":"heart","d":"The organ in the chest that pumps blood.","ds":"Órgano del pecho que bombea la sangre.","l":"A2","t":"cuerpo","a":["corazon"],"e":"The doctor listened to his heart."},{"w":"back","d":"The rear part of the body, from the neck to the hips.","ds":"Parte de atrás del cuerpo, del cuello a la cintura.","l":"A2","t":"cuerpo","a":["espalda","lomo","dorso"],"e":"My back hurts after sitting."},{"w":"knee","d":"The joint in the middle of the leg where it bends.","ds":"Articulación que está en medio de la pierna y permite doblarla.","l":"A2","t":"cuerpo","a":["rodilla"],"e":"She fell and hurt her knee."},{"w":"skin","d":"The natural outer covering of the body.","ds":"Capa que cubre todo el cuerpo por fuera.","l":"A2","t":"cuerpo","a":["piel","cutis"],"e":"Protect your skin from the sun."},{"w":"bone","d":"One of the hard parts inside the body that form the skeleton.","ds":"Cada una de las piezas duras que forman el esqueleto.","l":"A2","t":"cuerpo","a":["hueso"],"e":"He broke a bone in his arm."},{"w":"throat","d":"The passage at the back of the mouth, used for swallowing.","ds":"Conducto del fondo de la boca por donde pasa lo que se traga.","l":"B1","t":"cuerpo","a":["garganta"],"e":"I have a sore throat."},{"w":"finger","d":"One of the five long parts at the end of the hand.","ds":"Cada una de las cinco partes largas del extremo de la mano.","l":"A1","t":"cuerpo","a":["dedo","dedo de la mano"],"e":"She cut her finger with a knife."},{"w":"shoulder","d":"The part of the body where the arm joins the trunk.","ds":"Parte donde el brazo se une al tronco.","l":"A2","t":"cuerpo","a":["hombro"],"e":"He carried the bag on his shoulder."},{"w":"cough","d":"To push air out of the throat with a sudden noise.","ds":"Echar aire de golpe por la garganta, haciendo ruido.","l":"B1","t":"cuerpo","a":["toser","tos"],"e":"He began to cough at night."},{"w":"blood","d":"The red liquid that flows through the body.","ds":"Líquido rojo que corre por las venas.","l":"A2","t":"cuerpo","a":["sangre"],"e":"The nurse took some blood."},{"w":"eye","d":"The part of the body used for seeing.","ds":"Parte del cuerpo con la que se ve.","l":"A1","t":"cuerpo","a":["ojo"],"e":"She has one green eye."},{"w":"ear","d":"The part of the body used for hearing.","ds":"Parte del cuerpo con la que se escucha.","l":"A1","t":"cuerpo","a":["oreja","oido"],"e":"The music hurt my ear."},{"w":"arm","d":"The part of the body between the shoulder and the hand.","ds":"Parte del cuerpo que va del hombro a la mano.","l":"A1","t":"cuerpo","a":["brazo"],"e":"He held the baby in his arm."},{"w":"leg","d":"The part of the body used for walking and standing.","ds":"Parte del cuerpo con la que se camina.","l":"A1","t":"cuerpo","a":["pierna","pata"],"e":"My leg fell asleep."},{"w":"wrist","d":"The joint between the hand and the arm.","ds":"Articulación que une la mano con el brazo.","l":"B1","t":"cuerpo","a":["muñeca"],"e":"She wears her watch on her left wrist."},{"w":"ankle","d":"The joint between the foot and the leg.","ds":"Articulación que une el pie con la pierna.","l":"B1","t":"cuerpo","a":["tobillo"],"e":"He twisted his ankle on the stairs."},{"w":"chest","d":"The front part of the body between the neck and the stomach.","ds":"Parte delantera del cuerpo, entre el cuello y el estómago.","l":"B1","t":"cuerpo","a":["pecho","torax"],"e":"He felt a pain in his chest."},{"w":"elbow","d":"The joint in the middle of the arm where it bends.","ds":"Articulación que está en medio del brazo y permite doblarlo.","l":"B1","t":"cuerpo","a":["codo"],"e":"Do not put your elbows on the table."},{"w":"thumb","d":"The short thick finger at the side of the hand.","ds":"Dedo corto y grueso que está al costado de la mano.","l":"B1","t":"cuerpo","a":["pulgar","dedo gordo"],"e":"She hit her thumb with the hammer."},{"w":"breath","d":"The air that goes into and out of the lungs.","ds":"Aire que entra y sale de los pulmones.","l":"B1","t":"cuerpo","a":["aliento","respiracion","resuello"],"e":"Take a deep breath and relax."},{"w":"wrinkle","d":"A small line that appears on the skin as a person gets older.","ds":"Marca fina que va dejando la edad sobre la piel.","l":"B2","t":"cuerpo","a":["arruga","arrugas","pliegue","surco"],"e":"She laughed, and the wrinkles showed."},{"w":"knuckle","d":"One of the joints where a finger bends.","ds":"Cada uno de los bultos donde se dobla el dedo.","l":"B2","t":"cuerpo","a":["nudillo","nudillos","articulacion del dedo"],"e":"He knocked twice with his knuckle."},{"w":"spine","d":"The line of small bones down the middle of the back.","ds":"Hilera de huesos que recorre el medio de la espalda.","l":"B2","t":"cuerpo","a":["columna","espinazo","columna vertebral","espina dorsal"],"e":"Sit up straight and keep your spine long."},{"w":"eyelid","d":"The thin skin that closes over the eye when you sleep.","ds":"Piel fina que baja sobre el ojo al dormir.","l":"B2","t":"cuerpo","a":["parpado","parpados","tapa del ojo"],"e":"His eyelids were heavy with sleep."},{"w":"shirt","d":"A piece of clothing for the upper body, with sleeves and buttons.","ds":"Prenda para la parte de arriba, con mangas y botones.","l":"A1","t":"ropa","a":["camisa","camiseta","playera","remera"],"e":"He ironed his white shirt."},{"w":"dress","d":"A piece of clothing worn by women, covering the body and legs.","ds":"Prenda de una sola pieza que cubre el cuerpo y las piernas.","l":"A1","t":"ropa","a":["vestido"],"e":"She wore a blue dress to the party."},{"w":"shoes","d":"Things you wear on your feet to go outside.","ds":"Lo que se pone en los pies para salir a la calle.","l":"A1","t":"ropa","a":["zapatos","calzado","zapatillas"],"e":"Take off your shoes at the door."},{"w":"socks","d":"Soft coverings worn on the feet inside shoes.","ds":"Prendas blandas que se ponen en los pies por dentro del calzado.","l":"A1","t":"ropa","a":["calcetines","medias","soquetes"],"e":"He lost one of his socks."},{"w":"coat","d":"A long piece of clothing worn over other clothes when it is cold.","ds":"Prenda larga que se pone encima de la ropa cuando hace frío.","l":"A1","t":"ropa","a":["abrigo","saco","tapado","chaqueta"],"e":"Put your coat on, it is cold."},{"w":"skirt","d":"A piece of clothing that hangs from the waist.","ds":"Prenda que cuelga desde la cintura hacia abajo.","l":"A2","t":"ropa","a":["falda","pollera"],"e":"Her skirt was too long."},{"w":"belt","d":"A strip of leather or cloth worn around the waist.","ds":"Tira de cuero o tela que se ciñe a la cintura.","l":"A2","t":"ropa","a":["cinturon","correa","cinto","faja"],"e":"He tightened his belt."},{"w":"glove","d":"A covering for the hand, with separate parts for the fingers.","ds":"Prenda que cubre la mano, con una funda para cada dedo.","l":"A2","t":"ropa","a":["guante"],"e":"She lost one glove in the snow."},{"w":"scarf","d":"A long piece of cloth worn around the neck.","ds":"Tira larga de abrigo que se enrolla al cuello.","l":"A2","t":"ropa","a":["bufanda","pañuelo","chalina"],"e":"Grandma knitted him a scarf."},{"w":"pocket","d":"A small bag sewn into clothing for carrying small things.","ds":"Saquito cosido a la ropa para llevar cosas pequeñas.","l":"A2","t":"ropa","a":["bolsillo","bolsa"],"e":"The keys are in my pocket."},{"w":"button","d":"A small round object used to fasten clothes.","ds":"Pieza pequeña y redonda que sirve para abrochar la ropa.","l":"A2","t":"ropa","a":["boton"],"e":"A button came off my coat."},{"w":"sleeve","d":"The part of a shirt or coat that covers the arm.","ds":"Parte de una prenda que cubre el brazo.","l":"B1","t":"ropa","a":["manga"],"e":"He rolled up his sleeves."},{"w":"sweater","d":"A warm piece of clothing for the upper body, often knitted.","ds":"Prenda de abrigo para el torso, muchas veces de lana.","l":"A2","t":"ropa","a":["sueter","chompa","jersey","buzo","pulover","chomba"],"e":"She knitted a red sweater."},{"w":"ring","d":"A small circle of metal worn on a finger.","ds":"Aro pequeño de metal que se lleva en un dedo.","l":"A2","t":"ropa","a":["anillo","sortija","argolla"],"e":"She still wears her wedding ring."},{"w":"boot","d":"A strong shoe that covers the foot and part of the leg.","ds":"Calzado resistente que cubre el pie y parte de la pierna.","l":"A2","t":"ropa","a":["bota","botin"],"e":"His boots were full of mud."},{"w":"jacket","d":"A short coat.","ds":"Prenda corta de abrigo que se pone sobre la ropa.","l":"A2","t":"ropa","a":["chaqueta","chamarra","campera","saco","casaca"],"e":"Take a jacket, it may rain."},{"w":"collar","d":"The part of a shirt that goes around the neck.","ds":"Parte de una prenda que rodea el pescuezo.","l":"B1","t":"ropa","a":["cuello","cuello de la camisa"],"e":"His collar was too tight."},{"w":"zipper","d":"A fastener with two rows of teeth that lock together.","ds":"Sistema de dos hileras de dientes que se traban para cerrar.","l":"B1","t":"ropa","a":["cierre","cremallera","ziper","cierre relampago"],"e":"The zipper on my bag broke."},{"w":"cloth","d":"Material made from cotton or wool, used for making clothes.","ds":"Material hecho de algodón o lana con el que se hacen prendas.","l":"A2","t":"ropa","a":["tela","paño","trapo"],"e":"She bought some cloth at the market."},{"w":"hat","d":"A covering worn on the head.","ds":"Prenda que se pone sobre la cabeza.","l":"A1","t":"ropa","a":["sombrero","gorro","gorra"],"e":"Wear a hat in the sun."},{"w":"fabric","d":"Cloth made by weaving threads together.","ds":"Material flexible que resulta de entrelazar hilos.","l":"B1","t":"ropa","a":["tela","genero","tejido"],"e":"This fabric is very soft."},{"w":"stitch","d":"One movement of a needle and thread through cloth.","ds":"Cada paso de la aguja con hilo a través de una prenda.","l":"B1","t":"ropa","a":["puntada","punto","costura"],"e":"Grandma taught me this stitch."},{"w":"tailor","d":"A person whose job is making or repairing clothes.","ds":"Persona que se dedica a confeccionar o arreglar prendas.","l":"B1","t":"ropa","a":["sastre","modista","costurero"],"e":"The tailor shortened his trousers."},{"w":"wardrobe","d":"A tall cupboard where you hang your clothes.","ds":"Mueble alto donde se cuelga la ropa.","l":"B1","t":"ropa","a":["armario","ropero","closet","guardarropa"],"e":"Her coat is in the wardrobe."},{"w":"cuff","d":"The end of a sleeve, where it meets the hand.","ds":"Extremo de la manga, junto a la mano.","l":"B2","t":"ropa","a":["puno","puno de la manga","bocamanga"],"e":"He unbuttoned his cuff."},{"w":"lining","d":"The layer of cloth sewn inside a coat.","ds":"Tela que va cosida por dentro de un abrigo.","l":"B2","t":"ropa","a":["forro","forro interior","entretela"],"e":"The lining of the coat is torn."},{"w":"slipper","d":"A soft shoe worn inside the house.","ds":"Calzado blando que se usa dentro de la casa.","l":"B2","t":"ropa","a":["pantufla","pantuflas","chinela","chancleta"],"e":"She wears slippers in the morning."},{"w":"raincoat","d":"A light coat that keeps you dry when it rains.","ds":"Abrigo liviano que no deja pasar el agua.","l":"B2","t":"ropa","a":["impermeable","piloto","capa de lluvia"],"e":"Take your raincoat, it looks grey."},{"w":"bread","d":"A common food made from flour and baked in an oven.","ds":"Alimento hecho de harina y agua, cocido al horno.","l":"A1","t":"comida","a":["pan"],"e":"She baked bread every Sunday."},{"w":"milk","d":"The white liquid that comes from cows.","ds":"Líquido blanco que dan las vacas.","l":"A1","t":"comida","a":["leche"],"e":"There is no milk left."},{"w":"cheese","d":"A solid food made from milk.","ds":"Alimento sólido que se hace cuajando la leche.","l":"A1","t":"comida","a":["queso"],"e":"He put cheese on the bread."},{"w":"rice","d":"Small white grains that are boiled before eating.","ds":"Granos blancos y pequeños que se hierven antes de comer.","l":"A1","t":"comida","a":["arroz"],"e":"We eat rice almost every day."},{"w":"meat","d":"The flesh of an animal, used as food.","ds":"Parte blanda de los animales de tierra que se come.","l":"A1","t":"comida","a":["carne"],"e":"She does not eat meat."},{"w":"fish","d":"An animal that lives in water, often eaten as food.","ds":"Animal que vive en el agua y se come.","l":"A1","t":"comida","a":["pescado","pez"],"e":"We had fish on Friday."},{"w":"apple","d":"A round fruit with red or green skin.","ds":"Fruta redonda de cáscara roja o verde.","l":"A1","t":"comida","a":["manzana"],"e":"An apple a day keeps the doctor away."},{"w":"onion","d":"A round vegetable with a strong smell that makes you cry.","ds":"Verdura redonda de olor fuerte que hace llorar al cortarla.","l":"A2","t":"comida","a":["cebolla"],"e":"Chop the onion very small."},{"w":"salt","d":"A white substance used to give food more flavour.","ds":"Sustancia blanca que se echa a la comida para darle sabor.","l":"A1","t":"comida","a":["sal"],"e":"This soup needs more salt."},{"w":"sugar","d":"A sweet white substance used in coffee and cakes.","ds":"Sustancia blanca y dulce que se pone en el café.","l":"A1","t":"comida","a":["azucar"],"e":"Two spoons of sugar, please."},{"w":"honey","d":"A sweet sticky food made by bees.","ds":"Alimento dulce y espeso que producen las abejas.","l":"A2","t":"comida","a":["miel"],"e":"She put honey in her tea."},{"w":"soup","d":"A hot liquid food made by boiling meat or vegetables.","ds":"Comida líquida y caliente que se toma con cuchara.","l":"A1","t":"comida","a":["sopa","caldo"],"e":"Grandma's soup cures everything."},{"w":"beans","d":"Seeds of a plant, cooked and eaten as food.","ds":"Semillas de una planta que se cocinan y se comen.","l":"A2","t":"comida","a":["frijoles","porotos","habichuelas","judias","caraotas","alubias"],"e":"Beans and rice for lunch."},{"w":"corn","d":"A tall plant with yellow seeds, eaten as food.","ds":"Planta alta de granos amarillos apretados en una espiga.","l":"A2","t":"comida","a":["maiz","elote","choclo","mazorca"],"e":"They grow corn on the farm."},{"w":"butter","d":"A soft yellow fat made from milk.","ds":"Grasa blanda y amarilla que se saca de la leche.","l":"A2","t":"comida","a":["mantequilla","manteca"],"e":"Spread butter on the bread."},{"w":"garlic","d":"A strong-smelling plant used in cooking.","ds":"Planta de olor fuerte que se usa para condimentar.","l":"A2","t":"comida","a":["ajo"],"e":"Add two cloves of garlic."},{"w":"lemon","d":"A yellow fruit with a sour taste.","ds":"Fruta amarilla de sabor ácido.","l":"A1","t":"comida","a":["limon"],"e":"Squeeze a lemon over the fish."},{"w":"pepper","d":"A hot-tasting powder used to flavour food.","ds":"Polvo picante que se usa para condimentar.","l":"A2","t":"comida","a":["pimienta","aji","pimiento","chile"],"e":"Salt and pepper, please."},{"w":"flour","d":"A fine powder made from grain, used for making bread.","ds":"Polvo fino que se obtiene moliendo el grano.","l":"A2","t":"comida","a":["harina"],"e":"She needs more flour for the cake."},{"w":"egg","d":"An oval object laid by a hen, eaten as food.","ds":"Pieza ovalada que pone la gallina y se come.","l":"A1","t":"comida","a":["huevo","blanquillo"],"e":"I want one egg for breakfast."},{"w":"dough","d":"A thick mixture of flour and water, used for making bread.","ds":"Mezcla espesa de harina y agua para hacer pan.","l":"B1","t":"comida","a":["masa"],"e":"Let the dough rest for an hour."},{"w":"yeast","d":"A substance used to make bread rise.","ds":"Sustancia que hace crecer el pan.","l":"B1","t":"comida","a":["levadura"],"e":"Add the yeast to the warm water."},{"w":"stew","d":"A dish of meat and vegetables cooked slowly in liquid.","ds":"Plato de carne y verduras cocidas despacio en su jugo.","l":"B1","t":"comida","a":["guiso","estofado","cocido","guisado"],"e":"The stew cooked all afternoon."},{"w":"roast","d":"To cook meat or vegetables in an oven.","ds":"Cocinar carne o verduras dentro del horno.","l":"B1","t":"comida","a":["asar","asado","hornear","rostizar"],"e":"She will roast a chicken on Sunday."},{"w":"ripe","d":"Ready to be eaten, fully grown.","ds":"Que ya está listo para comerse.","l":"B1","t":"comida","a":["maduro","madura"],"e":"These tomatoes are not ripe yet."},{"w":"spice","d":"A substance from a plant, used to give food flavour.","ds":"Sustancia de origen vegetal que da sabor a la comida.","l":"B1","t":"comida","a":["especia","condimento"],"e":"She adds a spice I cannot name."},{"w":"broth","d":"A thin soup made by boiling meat or vegetables in water.","ds":"Líquido que queda de hervir carne o verduras en agua.","l":"B1","t":"comida","a":["caldo","consome"],"e":"A hot broth is good for a cold."},{"w":"pantry","d":"A small room or closet where food is kept.","ds":"Cuarto chico donde se guarda lo seco para cocinar.","l":"B2","t":"comida","a":["despensa","alacena","almacen"],"e":"There is rice in the pantry."},{"w":"leftover","d":"Food that was not eaten and is kept for later.","ds":"Lo que queda de una comida y se guarda para despues.","l":"B2","t":"comida","a":["sobras","restos","comida que sobra"],"e":"We ate the leftovers for lunch."},{"w":"dessert","d":"The sweet dish served at the end of a meal.","ds":"Lo que se sirve al final de la comida, siempre azucarado.","l":"B2","t":"comida","a":["postre","dulce","final dulce"],"e":"There is fruit for dessert."},{"w":"vinegar","d":"A sour liquid made from wine, used on salads.","ds":"Liquido agrio de sabor fuerte que se echa a la ensalada.","l":"B2","t":"comida","a":["vinagre","aceto","vinagre de vino"],"e":"Add oil and vinegar to the salad."},{"w":"mother","d":"A female parent.","ds":"Mujer que ha tenido un hijo.","l":"A1","t":"familia","a":["madre","mama"],"e":"My mother taught me to cook."},{"w":"father","d":"A male parent.","ds":"Hombre que ha tenido un hijo.","l":"A1","t":"familia","a":["padre","papa"],"e":"His father worked in the fields."},{"w":"daughter","d":"Somebody's female child.","ds":"Descendiente de sexo femenino de una persona.","l":"A1","t":"familia","a":["hija"],"e":"Their daughter lives abroad."},{"w":"sister","d":"A girl or woman with the same parents as you.","ds":"Mujer que tiene los mismos padres que uno.","l":"A1","t":"familia","a":["hermana"],"e":"My sister calls every Sunday."},{"w":"brother","d":"A boy or man with the same parents as you.","ds":"Varón que tiene los mismos padres que uno.","l":"A1","t":"familia","a":["hermano"],"e":"He has three brothers."},{"w":"aunt","d":"The sister of your mother or father.","ds":"Hermana del padre o de la madre.","l":"A2","t":"familia","a":["tia"],"e":"My aunt makes the best cakes."},{"w":"uncle","d":"The brother of your mother or father.","ds":"Hermano del padre o de la madre.","l":"A2","t":"familia","a":["tio"],"e":"My uncle lives in the country."},{"w":"cousin","d":"The child of your aunt or uncle.","ds":"Descendiente de un hermano del padre o de la madre.","l":"A2","t":"familia","a":["primo","prima"],"e":"We played with our cousins."},{"w":"wife","d":"The woman a man is married to.","ds":"Persona con la que un hombre está casado.","l":"A1","t":"familia","a":["esposa","mujer","señora"],"e":"He met his wife at a dance."},{"w":"husband","d":"The man a woman is married to.","ds":"Persona con la que una mujer está casada.","l":"A1","t":"familia","a":["esposo","marido"],"e":"Her husband died last winter."},{"w":"child","d":"A young boy or girl.","ds":"Persona de corta edad.","l":"A1","t":"familia","a":["niño","hijo","chico","criatura"],"e":"Every child got a present."},{"w":"friend","d":"A person you know well and like.","ds":"Persona a la que uno conoce bien y quiere.","l":"A1","t":"familia","a":["amigo","amiga"],"e":"She is my oldest friend."},{"w":"neighbor","d":"A person who lives next to you.","ds":"Persona que vive en la casa de al lado.","l":"A2","t":"familia","a":["vecino","vecina"],"e":"Our neighbor brought us soup."},{"w":"baby","d":"A very young child.","ds":"Persona recién nacida o de muy pocos meses.","l":"A1","t":"familia","a":["bebe","nene","guagua","criatura"],"e":"The baby slept all night."},{"w":"grandson","d":"The son of your son or daughter.","ds":"Descendiente varón de un hijo o una hija.","l":"A2","t":"familia","a":["nieto"],"e":"Her grandson visits on Sundays."},{"w":"family","d":"A group of people who are related to each other.","ds":"Grupo de personas unidas por parentesco.","l":"A1","t":"familia","a":["familia"],"e":"The whole family came to lunch."},{"w":"guest","d":"A person you have invited to your home.","ds":"Persona a la que uno recibe en su casa.","l":"A2","t":"familia","a":["invitado","huesped","visita"],"e":"We had ten guests for dinner."},{"w":"couple","d":"Two people who are married or in a relationship.","ds":"Dos personas unidas por una relación amorosa.","l":"A2","t":"familia","a":["pareja","matrimonio"],"e":"The couple has been married fifty years."},{"w":"name","d":"The word a person is called by.","ds":"Palabra con la que se llama a una persona.","l":"A1","t":"familia","a":["nombre"],"e":"What is your grandmother's name?"},{"w":"son","d":"Somebody's male child.","ds":"Descendiente de sexo masculino de una persona.","l":"A1","t":"familia","a":["hijo"],"e":"Their son is a teacher."},{"w":"widow","d":"A woman whose husband has died.","ds":"Mujer a la que se le ha muerto el marido.","l":"B1","t":"familia","a":["viuda"],"e":"She has been a widow for ten years."},{"w":"nephew","d":"The son of your brother or sister.","ds":"Descendiente varón de un hermano o una hermana.","l":"B1","t":"familia","a":["sobrino"],"e":"His nephew came to visit."},{"w":"niece","d":"The daughter of your brother or sister.","ds":"Descendiente mujer de un hermano o una hermana.","l":"B1","t":"familia","a":["sobrina"],"e":"Her niece studies medicine."},{"w":"relative","d":"A person in your family.","ds":"Persona que pertenece a la misma familia que uno.","l":"B1","t":"familia","a":["pariente","familiar"],"e":"All our relatives came to the wedding."},{"w":"ancestor","d":"A member of your family who lived long ago.","ds":"Persona de la familia que vivió hace mucho tiempo.","l":"B1","t":"familia","a":["antepasado","ancestro"],"e":"Her ancestors came from the south."},{"w":"sibling","d":"A brother or a sister.","ds":"Persona que tiene los mismos padres que otra.","l":"B1","t":"familia","a":["hermano","hermana","hermanos"],"e":"He has no siblings."},{"w":"spouse","d":"The person someone is married to.","ds":"Persona con la que alguien esta casado.","l":"B2","t":"familia","a":["esposo","esposa","conyuge","pareja"],"e":"Come to the party with your spouse."},{"w":"toddler","d":"A very young child who has just learned to walk.","ds":"Criatura que recien aprendio a caminar.","l":"B2","t":"familia","a":["nene","nino pequeno","chiquito","parvulo"],"e":"The toddler ran to the door."},{"w":"twin","d":"One of two children born on the same day to one mother.","ds":"Cada uno de los dos hermanos nacidos el mismo dia.","l":"B2","t":"familia","a":["gemelo","mellizo","cuate","jimagua"],"e":"My twin lives in another city."},{"w":"orphan","d":"A child whose parents have died.","ds":"Chico al que se le murieron el padre y la madre.","l":"B2","t":"familia","a":["huerfano","huerfana","sin padres"],"e":"The war left many orphans."},{"w":"walk","d":"To move forward on your feet.","ds":"Avanzar dando pasos.","l":"A1","t":"verbos","a":["caminar","andar","pasear"],"e":"They walk in the park every morning."},{"w":"sleep","d":"To rest with your eyes closed and your mind not active.","ds":"Descansar con los ojos cerrados y la mente en reposo.","l":"A1","t":"verbos","a":["dormir"],"e":"I could not sleep last night."},{"w":"drink","d":"To take liquid into your mouth and swallow it.","ds":"Pasar un líquido por la garganta.","l":"A1","t":"verbos","a":["beber","tomar"],"e":"Drink your milk before it gets cold."},{"w":"cook","d":"To prepare food using heat.","ds":"Preparar alimentos aplicándoles calor.","l":"A1","t":"verbos","a":["cocinar","guisar","cocer"],"e":"She learned to cook from her mother."},{"w":"wash","d":"To clean something with water.","ds":"Quitar la suciedad de algo usando agua.","l":"A1","t":"verbos","a":["lavar","lavarse"],"e":"Wash the plates, please."},{"w":"read","d":"To look at written words and understand them.","ds":"Mirar palabras escritas y entenderlas.","l":"A1","t":"verbos","a":["leer"],"e":"He reads the paper every morning."},{"w":"write","d":"To make words on paper or a screen.","ds":"Trazar palabras sobre un papel o una pantalla.","l":"A1","t":"verbos","a":["escribir"],"e":"Write your name here."},{"w":"listen","d":"To pay attention to a sound.","ds":"Prestar atención a un sonido.","l":"A1","t":"verbos","a":["escuchar","oir"],"e":"Listen to your grandmother."},{"w":"speak","d":"To say words, to talk.","ds":"Emitir palabras con la voz.","l":"A1","t":"verbos","a":["hablar","decir","conversar"],"e":"She speaks three languages."},{"w":"open","d":"To move something so that it is no longer closed.","ds":"Mover algo para que deje de estar cerrado.","l":"A1","t":"verbos","a":["abrir"],"e":"Open the window a little."},{"w":"close","d":"To move something so that it is no longer open.","ds":"Mover algo para que deje de estar abierto.","l":"A1","t":"verbos","a":["cerrar"],"e":"Close the door behind you."},{"w":"work","d":"To do a job in order to earn money.","ds":"Hacer una tarea a cambio de dinero.","l":"A1","t":"verbos","a":["trabajar","trabajo","laburar"],"e":"He worked in that shop for forty years."},{"w":"rest","d":"To stop working in order to relax.","ds":"Dejar el esfuerzo un rato para reponerse.","l":"A2","t":"verbos","a":["descansar","reposar","descanso"],"e":"Sit down and rest a while."},{"w":"laugh","d":"To make sounds with your voice because something is funny.","ds":"Hacer sonidos con la voz porque algo da gracia.","l":"A2","t":"verbos","a":["reir","reirse","risa"],"e":"She made everybody laugh."},{"w":"wait","d":"To stay somewhere until something happens.","ds":"Quedarse en un sitio hasta que algo ocurra.","l":"A1","t":"verbos","a":["esperar","aguardar"],"e":"Wait for me at the corner."},{"w":"help","d":"To do something useful for somebody.","ds":"Hacer algo útil por otra persona.","l":"A1","t":"verbos","a":["ayudar","ayuda","auxiliar"],"e":"Can you help me with this?"},{"w":"sell","d":"To give something to somebody in exchange for money.","ds":"Entregar algo a cambio de dinero.","l":"A2","t":"verbos","a":["vender"],"e":"They sell bread on that corner."},{"w":"clean","d":"To remove dirt from something.","ds":"Quitar la suciedad de una cosa.","l":"A1","t":"verbos","a":["limpiar","limpio","asear"],"e":"She cleans the house on Saturdays."},{"w":"bring","d":"To take something or somebody to a place.","ds":"Hacer que algo llegue hasta donde uno está.","l":"A2","t":"verbos","a":["traer","llevar"],"e":"Bring me the scissors, please."},{"w":"eat","d":"To put food in your mouth and swallow it.","ds":"Llevarse alimento a la boca y tragarlo.","l":"A1","t":"verbos","a":["comer"],"e":"Eat while it is hot."},{"w":"borrow","d":"To take something from somebody and give it back later.","ds":"Recibir algo de otro con el compromiso de devolverlo.","l":"B1","t":"verbos","a":["pedir prestado","tomar prestado","prestarse"],"e":"Can I borrow your scissors?"},{"w":"lend","d":"To give something to somebody for a short time.","ds":"Dar algo a otro por un tiempo, para que lo devuelva.","l":"B1","t":"verbos","a":["prestar"],"e":"She lent me her umbrella."},{"w":"fold","d":"To bend something so that one part lies on another.","ds":"Torcer una cosa para que una parte quede sobre la otra.","l":"B1","t":"verbos","a":["doblar","plegar"],"e":"Fold the towels and put them away."},{"w":"sweep","d":"To clean a floor using a broom.","ds":"Juntar la basura del piso con una escoba.","l":"B1","t":"verbos","a":["barrer"],"e":"She sweeps the yard every morning."},{"w":"knit","d":"To make clothes from wool using long needles.","ds":"Hacer prendas de lana con dos agujas largas.","l":"B1","t":"verbos","a":["tejer","hacer punto"],"e":"Grandma knits in the afternoons."},{"w":"mend","d":"To repair something that is broken or torn.","ds":"Coser o componer algo que está roto o descosido.","l":"B1","t":"verbos","a":["remendar","arreglar","reparar","zurcir"],"e":"She mended the hole in his sock."},{"w":"pour","d":"To make a liquid flow out of a container.","ds":"Hacer que un líquido salga de un recipiente.","l":"B1","t":"verbos","a":["servir","verter","echar","vaciar"],"e":"Pour the milk into the jug."},{"w":"stir","d":"To move a liquid around with a spoon.","ds":"Mover un líquido en círculos con una cuchara.","l":"B1","t":"verbos","a":["revolver","remover","mezclar","batir"],"e":"Stir the soup so it does not stick."},{"w":"whisper","d":"To speak very quietly, so that only one person hears.","ds":"Decir algo en voz muy baja al oido de alguien.","l":"B2","t":"verbos","a":["susurrar","murmurar","cuchichear","hablar bajito"],"e":"She whispered the answer to me."},{"w":"stumble","d":"To hit your foot on something and almost fall.","ds":"Pegarle con el pie a algo y casi caerse.","l":"B2","t":"verbos","a":["tropezar","trastabillar","dar un traspie"],"e":"He stumbled on the step."},{"w":"hurry","d":"To move or do something more quickly than usual.","ds":"Hacer las cosas mas rapido de lo normal.","l":"B2","t":"verbos","a":["apurarse","apresurarse","darse prisa","correr"],"e":"Hurry, the bus is coming."},{"w":"soak","d":"To leave something in water for a long time.","ds":"Dejar algo dentro del agua un buen rato.","l":"B2","t":"verbos","a":["remojar","poner en remojo","empapar"],"e":"Soak the beans overnight."},{"w":"happy","d":"Feeling pleasure or joy.","ds":"Que siente gusto o dicha.","l":"A1","t":"sentimientos","a":["feliz","contento","alegre","contenta"],"e":"She looked happy that afternoon."},{"w":"tired","d":"Needing rest or sleep.","ds":"Que necesita dormir o reponer fuerzas.","l":"A1","t":"sentimientos","a":["cansado","cansada","agotado"],"e":"I am too tired to cook."},{"w":"angry","d":"Feeling strong annoyance about something.","ds":"Que siente rabia por algo.","l":"A2","t":"sentimientos","a":["enojado","enfadado","molesto","bravo","furioso"],"e":"He was angry about the noise."},{"w":"scared","d":"Feeling fear.","ds":"Que siente temor.","l":"A2","t":"sentimientos","a":["asustado","con miedo","atemorizado","espantado"],"e":"The child was scared of the dark."},{"w":"proud","d":"Feeling pleased about something you or somebody else did.","ds":"Que siente satisfacción por algo propio o de los suyos.","l":"B1","t":"sentimientos","a":["orgulloso","orgullosa"],"e":"She was proud of her grandson."},{"w":"calm","d":"Not excited, nervous or upset.","ds":"Sin nervios ni agitación.","l":"B1","t":"sentimientos","a":["tranquilo","calmado","sereno","calma"],"e":"Stay calm, everything is fine."},{"w":"lonely","d":"Unhappy because you are alone.","ds":"Que se siente mal por estar sin compañía.","l":"B1","t":"sentimientos","a":["solo","sola","solitario"],"e":"She feels lonely in the evenings."},{"w":"worried","d":"Thinking about problems and feeling unhappy.","ds":"Que le da vueltas a un problema y no queda en paz.","l":"B1","t":"sentimientos","a":["preocupado","preocupada","inquieto"],"e":"He was worried about his mother."},{"w":"glad","d":"Pleased about something.","ds":"Que recibe algo con gusto.","l":"A2","t":"sentimientos","a":["contento","alegre","complacido"],"e":"I am glad you came."},{"w":"brave","d":"Not afraid of dangerous or difficult things.","ds":"Que no se achica ante el peligro.","l":"B1","t":"sentimientos","a":["valiente","corajudo","audaz"],"e":"She was brave at the hospital."},{"w":"bored","d":"Tired and impatient because nothing interesting is happening.","ds":"Que se cansa porque no pasa nada interesante.","l":"A2","t":"sentimientos","a":["aburrido","aburrida"],"e":"The children were bored at home."},{"w":"upset","d":"Unhappy or worried because something bad has happened.","ds":"Que quedó mal por algo que ocurrió.","l":"B1","t":"sentimientos","a":["disgustado","afectado","alterado","triste"],"e":"She was upset about the news."},{"w":"kind","d":"Caring about other people and wanting to help them.","ds":"Que se preocupa por los demás y quiere ayudarlos.","l":"A2","t":"sentimientos","a":["amable","bondadoso","bueno","gentil"],"e":"Your grandmother was a kind woman."},{"w":"gentle","d":"Calm, soft and careful, not rough.","ds":"Que trata las cosas con cuidado, sin brusquedad.","l":"B1","t":"sentimientos","a":["suave","delicado","dulce","tierno"],"e":"Be gentle with the baby."},{"w":"nervous","d":"Worried and a little afraid about something that will happen.","ds":"Que está intranquilo por algo que va a pasar.","l":"B1","t":"sentimientos","a":["nervioso","nerviosa","inquieto"],"e":"He was nervous before the exam."},{"w":"hopeful","d":"Believing that something good will happen.","ds":"Que confía en que algo bueno va a ocurrir.","l":"B1","t":"sentimientos","a":["esperanzado","optimista","con esperanza"],"e":"She stayed hopeful all winter."},{"w":"grateful","d":"Feeling thankful for something somebody did.","ds":"Que reconoce el bien que otro le hizo.","l":"B1","t":"sentimientos","a":["agradecido","agradecida"],"e":"We are grateful for your help."},{"w":"quiet","d":"Making little or no noise.","ds":"Que hace poco o ningún ruido.","l":"A2","t":"sentimientos","a":["callado","silencioso","tranquilo","quieto"],"e":"The house was very quiet."},{"w":"sad","d":"Unhappy.","ds":"Que no está alegre.","l":"A1","t":"sentimientos","a":["triste"],"e":"The song makes me sad."},{"w":"shy","d":"Nervous about meeting or talking to other people.","ds":"Que se cohíbe delante de los demás.","l":"B1","t":"sentimientos","a":["timido","timida","penoso","vergonzoso"],"e":"The boy is shy with strangers."},{"w":"afraid","d":"Feeling fear about something.","ds":"Que siente temor ante algo.","l":"A2","t":"sentimientos","a":["asustado","con miedo","temeroso","miedoso"],"e":"She is afraid of dogs."},{"w":"sorry","d":"Feeling sad about something bad you did.","ds":"Que lamenta algo malo que hizo.","l":"A1","t":"sentimientos","a":["arrepentido","apenado","lo siento","triste"],"e":"He said he was sorry."},{"w":"ashamed","d":"Feeling bad because of something wrong you did.","ds":"Que se siente mal por algo malo que hizo.","l":"B2","t":"sentimientos","a":["avergonzado","apenado","con verguenza"],"e":"He was ashamed of his answer."},{"w":"eager","d":"Wanting very much to do something, and soon.","ds":"Que quiere hacer algo cuanto antes.","l":"B2","t":"sentimientos","a":["ansioso","entusiasmado","con ganas","impaciente"],"e":"The children were eager to start."},{"w":"jealous","d":"Feeling bad because someone else has what you want.","ds":"Que se pone mal porque otro tiene lo que el queria.","l":"B2","t":"sentimientos","a":["celoso","celosa","envidioso"],"e":"He was jealous of his brother."},{"w":"relieved","d":"Feeling calm again after a worry has passed.","ds":"Que quedo en paz porque paso lo que le preocupaba.","l":"B2","t":"sentimientos","a":["aliviado","aliviada","desahogado"],"e":"She was relieved to hear the news."},{"w":"rain","d":"Water that falls from the clouds.","ds":"Agua que cae de las nubes.","l":"A1","t":"tiempo","a":["lluvia","llover"],"e":"The rain lasted all night."},{"w":"snow","d":"Soft white pieces of frozen water that fall from the sky.","ds":"Copos blancos y helados que caen del cielo.","l":"A1","t":"tiempo","a":["nieve","nevar"],"e":"She had never seen snow."},{"w":"wind","d":"Air that moves quickly.","ds":"Aire que se mueve con fuerza.","l":"A2","t":"tiempo","a":["viento"],"e":"The wind blew the door shut."},{"w":"cloud","d":"A white or grey mass of water drops in the sky.","ds":"Masa blanca o gris de gotas suspendidas en el cielo.","l":"A2","t":"tiempo","a":["nube"],"e":"There is not a cloud in the sky."},{"w":"storm","d":"Very bad weather with strong wind and rain.","ds":"Mal tiempo con aguacero y viento fuerte.","l":"A2","t":"tiempo","a":["tormenta","temporal","tempestad"],"e":"The storm broke a window."},{"w":"cold","d":"Having a low temperature.","ds":"Que está a baja temperatura.","l":"A1","t":"tiempo","a":["frio","fria"],"e":"The soup is getting cold."},{"w":"morning","d":"The early part of the day, before noon.","ds":"Primera parte del día, antes del mediodía.","l":"A1","t":"tiempo","a":["mañana","madrugada"],"e":"She wakes up early every morning."},{"w":"night","d":"The dark part of the day, when people sleep.","ds":"Parte oscura del día, cuando la gente duerme.","l":"A1","t":"tiempo","a":["noche"],"e":"It rained all night."},{"w":"week","d":"A period of seven days.","ds":"Periodo de siete días.","l":"A1","t":"tiempo","a":["semana"],"e":"He calls once a week."},{"w":"month","d":"One of the twelve periods that a year is divided into.","ds":"Cada una de las doce partes en que se divide el año.","l":"A1","t":"tiempo","a":["mes"],"e":"She stayed for a month."},{"w":"year","d":"A period of twelve months.","ds":"Periodo de doce meses.","l":"A1","t":"tiempo","a":["año"],"e":"They married fifty years ago."},{"w":"today","d":"On this day.","ds":"En el día en que estamos.","l":"A1","t":"tiempo","a":["hoy"],"e":"Today is her birthday."},{"w":"spring","d":"The season after winter, when plants begin to grow.","ds":"Estación que sigue al invierno, cuando brotan las plantas.","l":"A2","t":"tiempo","a":["primavera"],"e":"The garden is best in spring."},{"w":"summer","d":"The warmest season of the year.","ds":"Estación más calurosa del año.","l":"A1","t":"tiempo","a":["verano"],"e":"We visit her every summer."},{"w":"autumn","d":"The season between summer and winter, when leaves fall.","ds":"Estación entre el verano y el invierno, cuando caen las hojas.","l":"A2","t":"tiempo","a":["otoño"],"e":"The leaves turn brown in autumn."},{"w":"winter","d":"The coldest season of the year.","ds":"Estación más fría del año.","l":"A1","t":"tiempo","a":["invierno"],"e":"Winter is long in the mountains."},{"w":"hour","d":"A period of sixty minutes.","ds":"Periodo de sesenta minutos.","l":"A1","t":"tiempo","a":["hora"],"e":"The soup cooks for an hour."},{"w":"season","d":"One of the four parts of the year.","ds":"Cada una de las cuatro partes en que se divide el año.","l":"A2","t":"tiempo","a":["estacion","temporada"],"e":"Which season do you prefer?"},{"w":"early","d":"Before the usual or expected time.","ds":"Antes de la hora prevista.","l":"A2","t":"tiempo","a":["temprano"],"e":"She always arrives early."},{"w":"late","d":"After the usual or expected time.","ds":"Después de la hora prevista.","l":"A1","t":"tiempo","a":["tarde","atrasado"],"e":"Sorry I am late."},{"w":"dawn","d":"The time of day when light first appears.","ds":"Momento del día en que aparece la primera luz.","l":"B1","t":"tiempo","a":["amanecer","alba","madrugada","aurora"],"e":"She wakes up at dawn."},{"w":"dusk","d":"The time of day when the light is fading.","ds":"Momento del día en que se va la última luz.","l":"B1","t":"tiempo","a":["anochecer","atardecer","crepusculo","ocaso"],"e":"The birds return at dusk."},{"w":"breeze","d":"A light gentle wind.","ds":"Viento suave y agradable.","l":"B1","t":"tiempo","a":["brisa","airecillo"],"e":"A cool breeze came through the window."},{"w":"frost","d":"A thin white layer of ice that forms when it is very cold.","ds":"Capa fina y blanca de hielo que deja el frío de la noche.","l":"B1","t":"tiempo","a":["escarcha","helada"],"e":"There was frost on the grass."},{"w":"thunder","d":"The loud noise that comes after lightning.","ds":"Estruendo que se oye después del relámpago.","l":"B1","t":"tiempo","a":["trueno","truenos"],"e":"The thunder frightened the children."},{"w":"shade","d":"An area where the sun does not reach.","ds":"Zona a la que no llega el sol.","l":"B1","t":"tiempo","a":["sombra"],"e":"They sat in the shade of the tree."},{"w":"drought","d":"A long period with no rain.","ds":"Temporada larga sin lluvia.","l":"B1","t":"tiempo","a":["sequia"],"e":"The drought lasted two years."},{"w":"drizzle","d":"Very light rain that falls in small drops.","ds":"Lluvia muy fina que apenas moja.","l":"B2","t":"tiempo","a":["llovizna","garua","chispear","lloviznar"],"e":"A soft drizzle fell all morning."},{"w":"forecast","d":"What someone says the weather will be like tomorrow.","ds":"Lo que se anuncia que va a pasar con el clima.","l":"B2","t":"tiempo","a":["pronostico","prediccion","parte del tiempo"],"e":"The forecast says rain."},{"w":"hail","d":"Small balls of ice that fall from the sky in a storm.","ds":"Bolitas de hielo que caen del cielo en la tormenta.","l":"B2","t":"tiempo","a":["granizo","piedra","granizada"],"e":"The hail broke two windows."},{"w":"humid","d":"Full of water in the air, sticky and heavy.","ds":"Cuando el aire trae agua y todo se siente pesado.","l":"B2","t":"tiempo","a":["humedo","humeda","pegajoso","cargado"],"e":"The afternoon was hot and humid."},{"w":"street","d":"A road in a town with houses on both sides.","ds":"Camino de un pueblo con casas a los dos lados.","l":"A1","t":"calle","a":["calle","via"],"e":"They live on a quiet street."},{"w":"shop","d":"A place where you buy things.","ds":"Local donde se compran cosas.","l":"A1","t":"calle","a":["tienda","negocio","almacen","comercio"],"e":"The shop closes at six."},{"w":"market","d":"A place where people buy and sell food and goods.","ds":"Sitio donde se compran y venden alimentos y productos.","l":"A2","t":"calle","a":["mercado","feria","plaza","tianguis"],"e":"She buys her vegetables at the market."},{"w":"bank","d":"A place where people keep and borrow money.","ds":"Entidad donde la gente guarda y pide dinero prestado.","l":"A1","t":"calle","a":["banco"],"e":"The bank is next to the church."},{"w":"church","d":"A building where Christians go to pray.","ds":"Edificio al que van los cristianos a rezar.","l":"A2","t":"calle","a":["iglesia","templo"],"e":"She goes to church on Sundays."},{"w":"park","d":"A public area with grass and trees.","ds":"Zona pública con césped y árboles para pasear.","l":"A1","t":"calle","a":["parque","plaza"],"e":"The children play in the park."},{"w":"bridge","d":"A structure built over a river or road.","ds":"Construcción que cruza por encima de un río o una vía.","l":"A2","t":"calle","a":["puente"],"e":"Cross the bridge and turn left."},{"w":"corner","d":"The place where two streets meet.","ds":"Punto donde se encuentran dos calles.","l":"A2","t":"calle","a":["esquina","rincon"],"e":"Wait for me on the corner."},{"w":"train","d":"A vehicle that runs on rails and carries people.","ds":"Vehículo largo que anda sobre rieles y lleva pasajeros.","l":"A1","t":"calle","a":["tren"],"e":"The train leaves at eight."},{"w":"ticket","d":"A small piece of paper that lets you travel or enter.","ds":"Papel que da derecho a viajar o a entrar en un sitio.","l":"A1","t":"calle","a":["boleto","billete","pasaje","entrada","tiquete"],"e":"He bought two tickets."},{"w":"road","d":"A long hard surface built for vehicles to travel on.","ds":"Superficie dura y larga construida para que circulen los vehículos.","l":"A1","t":"calle","a":["carretera","camino","ruta","via"],"e":"The road to the village is bad."},{"w":"city","d":"A large and important town.","ds":"Población grande e importante.","l":"A1","t":"calle","a":["ciudad"],"e":"She moved to the city young."},{"w":"town","d":"A place with houses and shops, smaller than a city.","ds":"Población con casas y comercios, menor que una ciudad.","l":"A1","t":"calle","a":["pueblo","poblado","villa","localidad"],"e":"He grew up in a small town."},{"w":"station","d":"A place where trains or buses stop.","ds":"Sitio donde paran los trenes o los buses.","l":"A1","t":"calle","a":["estacion","terminal"],"e":"I will meet you at the station."},{"w":"hospital","d":"A place where sick people are treated by doctors.","ds":"Lugar donde los médicos atienden a los enfermos.","l":"A1","t":"calle","a":["hospital","clinica","sanatorio"],"e":"She spent a week in hospital."},{"w":"school","d":"A place where children go to learn.","ds":"Lugar al que van los niños a aprender.","l":"A1","t":"calle","a":["escuela","colegio"],"e":"The school is closed today."},{"w":"library","d":"A place where books are kept and can be borrowed.","ds":"Sitio donde se guardan libros y se pueden pedir prestados.","l":"A2","t":"calle","a":["biblioteca"],"e":"He reads at the library."},{"w":"traffic","d":"The vehicles moving on a road.","ds":"Conjunto de vehículos que circulan por una vía.","l":"B1","t":"calle","a":["trafico","transito","circulacion"],"e":"There was heavy traffic this morning."},{"w":"square","d":"An open public area in a town, with buildings around it.","ds":"Espacio abierto de un pueblo, rodeado de edificios.","l":"A2","t":"calle","a":["plaza","cuadrado"],"e":"The old men sit in the square."},{"w":"bus","d":"A large vehicle that carries many people along a route.","ds":"Vehículo grande que lleva mucha gente por una ruta fija.","l":"A1","t":"calle","a":["autobus","camion","colectivo","guagua","micro","bus","omnibus"],"e":"She takes the bus to work."},{"w":"pavement","d":"The hard path at the side of a road, for people walking.","ds":"Franja dura al costado de la vía por donde camina la gente.","l":"B1","t":"calle","a":["acera","vereda","banqueta","anden"],"e":"Walk on the pavement, not the road."},{"w":"crossing","d":"A place where you can walk safely across a road.","ds":"Punto señalado para atravesar una vía con seguridad.","l":"B1","t":"calle","a":["cruce","paso de peatones","paso peatonal","crucero"],"e":"Wait at the crossing for the green light."},{"w":"suburb","d":"An area on the edge of a city where people live.","ds":"Zona de viviendas en las orillas de una ciudad.","l":"B1","t":"calle","a":["suburbio","barrio","afueras","periferia"],"e":"They moved to a quiet suburb."},{"w":"lane","d":"A narrow road, often in the countryside.","ds":"Vía angosta, muchas veces en el campo.","l":"B1","t":"calle","a":["callejon","sendero","camino","carril"],"e":"The house is at the end of the lane."},{"w":"alley","d":"A narrow passage between buildings.","ds":"Paso angosto entre edificios.","l":"B1","t":"calle","a":["callejon","callejuela","pasaje"],"e":"The cat ran down the alley."},{"w":"fountain","d":"A structure that sends water into the air, often in a square.","ds":"Construcción que lanza agua al aire, común en las plazas.","l":"B1","t":"calle","a":["fuente","pileta"],"e":"The children played near the fountain."},{"w":"pharmacy","d":"A shop where medicines are sold.","ds":"Local donde se venden medicamentos.","l":"B1","t":"calle","a":["farmacia","botica","droguería"],"e":"The pharmacy is open until nine."},{"w":"sidewalk","d":"The path at the side of a street where people walk.","ds":"Franja al costado de la calzada por donde va la gente a pie.","l":"B2","t":"calle","a":["vereda","acera","banqueta","anden"],"e":"Wait for me on the sidewalk."},{"w":"curb","d":"The raised edge of stone between the street and the path.","ds":"Escalon de piedra que separa la calzada del paso de la gente.","l":"B2","t":"calle","a":["cordon","bordillo","cuneta","borde de la vereda"],"e":"The car stopped near the curb."},{"w":"stall","d":"A small open shop in a market, made of a table and a roof.","ds":"Tienda chica de feria, con mesa y toldo.","l":"B2","t":"calle","a":["puesto","tenderete","kiosco","caseta"],"e":"She sells fruit at a stall."},{"w":"bakery","d":"The shop where bread and cakes are made and sold.","ds":"Negocio donde se hace y se vende el pan.","l":"B2","t":"calle","a":["panaderia","horno","tahona"],"e":"The bakery opens at six."}]};
+
+/* ============ util ============ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+// N y WORDS_PER cambian con el tamano que elige el jugador; se fijan en nuevaSopa().
+let N = 10, WORDS_PER = 7;
+
+// Las bandas van en orden de prioridad: se llena con la primera y solo se baja
+// a la siguiente si falta. Por eso "facil" incluye A2 al final (red de seguridad)
+// y "dificil" arranca por B1 aunque ningun tema tenga B1 suficientes para llenar solo.
+const NIVELES = {
+  facil:   { bandas:["A1","A2"],      pista:"<b>Primeras palabras.</b> Lo de todos los días: la mesa, el pan, la puerta." },
+  medio:   { bandas:["A2","A1"],      pista:"<b>Ya me defiendo.</b> Un poco más de vuelo: el delantal, la bandeja, la escoba." },
+  dificil: { bandas:["B1","A2","A1"], pista:"<b>Me animo a más.</b> Palabras que cuestan: el rallador, la escarcha, el sobrino." },
+  // El nivel de la sopa del dia de los grandes. El cupo es lo que mantiene la
+  // mezcla en cuatro B2 y el resto B1: sin el, el orden llenaria de B2 hasta
+  // agotarlas y la mezcla dependeria de cuantas haya en el corpus ese dia.
+  alto:    { bandas:["B2","B1"], cupos:{ B2:4 }, pista:"<b>Me la banco.</b> Vocabulario de todos los días que casi nadie sabe: el cordón, la alacena, el nudillo." }
+};
+const TAMANOS = {
+  chica:   { lado:8,  palabras:5, max:7, pista:"8 × 8 · cinco palabras. Letras grandes, se acaba rápido." },
+  mediana: { lado:10, palabras:7, max:8, pista:"10 × 10 · siete palabras. El tamaño de siempre." },
+  grande:  { lado:12, palabras:9, max:8, pista:"12 × 12 · nueve palabras. Para sentarse un rato." }
+};
+const DIRS = [[0,1],[1,0],[1,1],[-1,1],[0,-1],[-1,0],[-1,-1],[1,-1]];
+const FREQ = "eeeeeeeeeeeetttttttttaaaaaaaaaoooooooooiiiiiiiinnnnnnnsssssssrrrrrrhhhhhlllldddccuummffppggwwyybvkjxqz";
+
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function norm(s){
+  return String(s||"").toLowerCase().normalize("NFD").replace(new RegExp("[\u0300-\u036f]","g"),"")
+    .replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim()
+    .replace(/^(el|la|los|las|un|una|unos|unas)\s+/,"").trim();
+}
+function lev(a,b){
+  if(a===b) return 0;
+  if(Math.abs(a.length-b.length)>1) return 9;
+  const m=a.length, n=b.length; let prev=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[n];
+}
+function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
+function shuffle(rng, arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ============ estado ============ */
+const KEY = "sopa_fase1_v1";
+let S = load();
+function load(){
+  try{ const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){}
+  return fresh();
+}
+function fresh(){
+  // La abuela pregunta es el ritmo por defecto: se juega asi sin elegir nada
+  // al empezar, y se cambia a sopa tranquila desde Configuracion si se quiere.
+  return { pid:"", anos:null, modo:"pregunta", modoAsignado:null, nivel:"medio", tamano:"mediana",
+           idiomaDef:"en", inicio:Date.now(), cambiosDificultad:0,
+           toquesBloqueados:0, interes:{},
+           sopasCompletadas:0, sopasSeguidas:0, detuvo:null, diario:{}, eventos:[], respuestas:[] };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+// Una sesion guardada antes de este build no trae los campos nuevos.
+if(!S.idiomaDef) S.idiomaDef = "en";
+if(!S.interes) S.interes = {};
+if(!S.diario) S.diario = {};
+if(typeof S.anos !== "number") S.anos = null;
+if(typeof S.toquesBloqueados !== "number") S.toquesBloqueados = 0;
+if(S.nivel !== "medio") S.nivel = "medio";
+if(S.tamano !== "mediana") S.tamano = "mediana";
+if(!S.modo) S.modo = S.modoAsignado || "pregunta"; // sesion vieja, sin ritmo guardado
+function ev(type, data){
+  S.eventos.push(Object.assign({ ms: Date.now()-S.inicio, type }, data||{}));
+  if(S.eventos.length > 600) S.eventos.splice(0, 200);
+  save(); renderMod();
+}
+
+/* ============ generación ============ */
+let P = null;
+// La sopa del dia le pasa semilla, tema y dificultad propias; el juego libre
+// no pasa nada y todo sale del estado, igual que en fase 0.
+function nuevaSopa(idx, opts){
+  const o = opts || {};
+  const nivel = o.nivel || S.nivel, tamano = o.tamano || S.tamano;
+  const tam = TAMANOS[tamano] || TAMANOS.mediana;
+  const niv = NIVELES[nivel] || NIVELES.facil;
+  N = tam.lado; WORDS_PER = tam.palabras;
+  const seed = o.seed != null ? o.seed : (S.inicio % 100000) * 1000 + idx;
+  const rng = mulberry32(seed);
+  const temas = Object.keys(CORPUS.temas);
+  const tema = o.tema || temas[idx % temas.length];
+  const base = CORPUS.entradas.filter(e => e.t===tema && e.w.length>=4 && e.w.length<=tam.max);
+
+  // Se llena por bandas en orden de prioridad: primero la del nivel, y solo se
+  // baja a la siguiente cuando el tema no da para mas.
+  let elegidas = [];
+  for(const banda of niv.bandas){
+    if(elegidas.length >= WORDS_PER) break;
+    // Un nivel puede ponerle tope a una banda —«de B2, no mas de cuatro»—. Sin
+    // tope se llena hasta completar, que es como se comportan los tres viejos.
+    const cupo = (niv.cupos && niv.cupos[banda]) || WORDS_PER;
+    const dis = shuffle(rng, base.filter(e => e.l===banda && elegidas.indexOf(e)<0));
+    elegidas = elegidas.concat(dis.slice(0, Math.min(cupo, WORDS_PER - elegidas.length)));
+  }
+  // Red de seguridad: si el tema completo no alcanza, se toma lo que haya.
+  if(elegidas.length < WORDS_PER){
+    const resto = shuffle(rng, base.filter(e => elegidas.indexOf(e)<0));
+    elegidas = elegidas.concat(resto.slice(0, WORDS_PER - elegidas.length));
+  }
+
+  let grid=null, cells=null, tries=0;
+  while(!grid && tries++ < 60){ const r = armar(mulberry32(seed+tries*7919), elegidas); if(r){ grid=r.grid; cells=r.cells; } }
+  // Si ni asi entra, se recorta la sopa antes que entregar una grilla rota.
+  while(!grid && elegidas.length > 3){
+    elegidas = elegidas.slice(0, elegidas.length-1);
+    for(let t=0; !grid && t<40; t++){ const r = armar(mulberry32(seed+t*104729), elegidas); if(r){ grid=r.grid; cells=r.cells; } }
+  }
+
+  return { idx, seed, tema, nivel, tamano, dia: o.dia || null, variante: o.variante || null,
+           palabras: elegidas.map((e,i)=>({ e, found:false, resp:null, cells:cells[i]||[] })), grid };
+}
+function armar(rng, words){
+  const g = Array.from({length:N},()=>Array(N).fill(""));
+  const placed=[];
+  const orden = words.slice().sort((a,b)=>b.w.length-a.w.length);
+  const map = new Map();
+  const FWD = [[0,1],[1,0],[1,1],[-1,1]];
+  for(const e of orden){
+    const w = e.w.toUpperCase(); let ok=false;
+    for(let t=0;t<400 && !ok;t++){
+      const [dr,dc] = pick(rng, FWD);
+      const r0 = Math.floor(rng()*N), c0 = Math.floor(rng()*N);
+      const r1 = r0 + dr*(w.length-1), c1 = c0 + dc*(w.length-1);
+      if(r1<0||r1>=N||c1<0||c1>=N) continue;
+      let fit=true; const cs=[];
+      for(let i=0;i<w.length;i++){
+        const r=r0+dr*i, c=c0+dc*i;
+        if(g[r][c] && g[r][c]!==w[i]){ fit=false; break; }
+        cs.push({r,c});
+      }
+      if(!fit) continue;
+      cs.forEach((p,i)=>{ g[p.r][p.c]=w[i]; });
+      map.set(e.w, cs); ok=true;
+    }
+    if(!ok) return null;
+  }
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(!g[r][c]) g[r][c] = FREQ[Math.floor(rng()*FREQ.length)].toUpperCase();
+  return { grid:g, cells: words.map(e=>map.get(e.w)) };
+}
+
+/* ============ la sopa del dia ============ */
+// Una sopa por dia, y la semilla sale de la fecha y no del telefono: por eso
+// dos personas ven exactamente la misma sin que haya un servidor en el medio.
+// Desde que la edad decide la medida hay dos, asi que «la misma para todo el
+// mundo» vale dentro de cada variante, no entre las dos. Lo que si se conserva
+// es el tema: el mismo dia, las dos son de la cocina o las dos son de la calle.
+// Dos sopas del dia, una por edad declarada. Comparten fecha, semilla y tema:
+// lo unico que cambia es la medida y cuanto ingles piden. Asi «hoy tocó la
+// cocina» sigue siendo comun a todo el mundo, que es la mitad de lo que hace
+// que compartir el resultado signifique algo.
+const EDAD_CORTE = 15;   // menos de 15 juega la chica; de 15 en adelante, la grande
+const DIARIA = {
+  chica:  { nivel:"facil", tamano:"chica",   dice:"8×8, cinco palabras" },
+  grande: { nivel:"alto",  tamano:"mediana", dice:"10×10, siete palabras" }
+};
+function varianteDiaria(anos){
+  return (typeof anos === "number" && anos < EDAD_CORTE) ? "chica" : "grande";
+}
+const DIAS_ATRAS = 7;   // las ultimas siete quedan para el que falto
+const URL_JUEGO = "";   // se completa cuando el juego tenga direccion publica
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto",
+               "septiembre","octubre","noviembre","diciembre"];
+
+function claveDia(d){
+  const z = n => (n<10?"0":"")+n;
+  return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());
+}
+function hoyClave(){ return claveDia(new Date()); }
+function diasAtras(n){ const d = new Date(); d.setDate(d.getDate()-n); return claveDia(d); }
+function ultimosDias(){ const a=[]; for(let i=DIAS_ATRAS-1;i>=0;i--) a.push(diasAtras(i)); return a; }
+// Numero de dia estable: cuenta dias, no milisegundos, asi el horario de verano
+// no corre la sopa de nadie.
+function numeroDia(clave){
+  const [a,m,d] = clave.split("-").map(Number);
+  return Math.round(Date.UTC(a, m-1, d) / 86400000);
+}
+function semillaDia(clave){ return numeroDia(clave) * 1009 + 17; }
+function sopaDelDia(clave, variante){
+  const v = variante || varianteDiaria(S.anos);
+  const d = DIARIA[v] || DIARIA.grande;
+  const n = numeroDia(clave), temas = Object.keys(CORPUS.temas);
+  return nuevaSopa(n, { seed: semillaDia(clave), tema: temas[n % temas.length],
+                        nivel: d.nivel, tamano: d.tamano, dia: clave, variante: v });
+}
+function ladoDiaria(variante){ return TAMANOS[(DIARIA[variante] || DIARIA.grande).tamano].lado; }
+function fechaLarga(clave){
+  const [a,m,d] = clave.split("-").map(Number);
+  return d + " de " + MESES[m-1];
+}
+// El compartible es texto plano con emojis, nunca una imagen: se pega en el
+// grupo de la familia sin pensarlo y no cuesta datos en un telefono de gama baja.
+const MARCA = { acierto:"\u{1F7E9}", casi:"\u{1F7E8}" };
+function textoCompartible(clave, r){
+  const min = Math.floor(r.seg/60), seg = r.seg%60;
+  const tiempo = min ? min+" min "+(seg<10?"0":"")+seg+" s" : seg+" s";
+  const filas = r.marcas.map(m => MARCA[m] || "\u{2B1C}").join("");
+  // La medida va en el titulo: con dos variantes en la calle, dos resultados
+  // distintos no son comparables y el texto no puede hacer creer que si.
+  const medida = r.lado ? " · " + r.lado + "×" + r.lado : "";
+  const lineas = ["Sopa de la Abuela · " + fechaLarga(clave) + medida, filas,
+                  r.ok + " de " + r.tot + " · " + tiempo];
+  if(URL_JUEGO) lineas.push(URL_JUEGO);
+  return lineas.join("\n");
+}
+function guardarDia(clave, r){ S.diario[clave] = r; save(); }
+function diaHecho(clave){ return (S.diario && S.diario[clave]) || null; }
+
+/* ============ la cerradura del panel ============ */
+// El panel de moderador deja de ser un secreto de cinco toques y pasa a tener
+// clave. Que quede dicho con todas las letras: esto NO es seguridad. El juego
+// entero viaja en el telefono y quien sepa mirar el fuente encuentra el hash y
+// lo prueba contra las diez mil claves posibles en un segundo. Es una puerta,
+// no una caja fuerte: alcanza para que ningun participante entre sin querer, y
+// para que el que la abre sepa que esta pasando a otra cosa. El dia que haya
+// datos que proteger de verdad, eso se resuelve en un servidor, no aca.
+const PIN_KEY = "sopa_fase1_pin";            // aparte del estado: borrar la sesion no borra la clave
+const PIN_LARGO = 4;
+const PIN_HASH_DEFECTO = "8271b7ed12a908cd"; // la clave de fabrica esta en LEEME.md, no aca
+const PIN_INTENTOS = 5;                      // fallos seguidos antes de la espera
+const PIN_ESPERA_MS = 30000;
+
+// Hash con sal y mil vueltas, en JavaScript puro: sin WebCrypto, porque el
+// juego tiene que andar como archivo suelto y las pruebas corren sin navegador.
+function pinHash(pin){
+  const sal = "sopa-de-la-abuela/fase1";
+  const txt = sal + "·" + pin + "·" + sal;
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for(let v = 0; v < 1000; v++){
+    for(let i = 0; i < txt.length; i++){
+      const c = txt.charCodeAt(i) + v;
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul((h2 + c) ^ (h1 >>> 7), 0x85ebca6b) >>> 0;
+    }
+  }
+  return h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+}
+function pinGuardado(){
+  try{ const v = localStorage.getItem(PIN_KEY); if(v) return v; }catch(e){}
+  return PIN_HASH_DEFECTO;
+}
+function pinValido(pin){ return typeof pin === "string" && pin.length === PIN_LARGO && /^[0-9]+$/.test(pin); }
+function pinCorrecto(pin){ return pinValido(pin) && pinHash(pin) === pinGuardado(); }
+function pinCambiar(pin){ if(pinValido(pin)){ try{ localStorage.setItem(PIN_KEY, pinHash(pin)); }catch(e){} } }
+
+// El cerrojo cuenta fallos y hace esperar. Vive en su propia clave, no en el
+// estado de la sesion, para que «borrar y empezar sesion nueva» no sea la forma
+// facil de saltearlo.
+function cerrojoNuevo(){ return { fallos:0, hasta:0 }; }
+function cerrojoBloqueado(c, ahora){ return c.hasta > ahora; }
+function cerrojoRestante(c, ahora){ return Math.max(0, Math.ceil((c.hasta - ahora) / 1000)); }
+function cerrojoFallo(c, ahora){
+  const fallos = c.fallos + 1;
+  return fallos >= PIN_INTENTOS ? { fallos:0, hasta: ahora + PIN_ESPERA_MS } : { fallos, hasta:c.hasta };
+}
+function cerrojoLeer(){
+  try{ const r = localStorage.getItem(PIN_KEY + "_cerrojo"); if(r) return JSON.parse(r); }catch(e){}
+  return cerrojoNuevo();
+}
+function cerrojoGuardar(c){ try{ localStorage.setItem(PIN_KEY + "_cerrojo", JSON.stringify(c)); }catch(e){} }
+
+/* ============ pantallas ============ */
+// Al panel no se entra sin clave, y salir de el vuelve a cerrarlo: el moderador
+// entrega el telefono y la cerradura queda puesta sin tener que acordarse.
+function show(id){
+  if(id === "mod" && !llaveAbierta) return pedirLlave("abrir");
+  if(id !== "mod") llaveAbierta = false;
+  $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  window.scrollTo(0,0);
+}
+
+/* ============ dibujar ============ */
+function pintar(){
+  $("#sopaN").textContent = P.dia ? "Sopa del día" : "Sopa " + (P.idx+1);
+  $("#tema").textContent = CORPUS.temas[P.tema];
+  const g = $("#grid");
+  g.style.gridTemplateColumns = `repeat(${N},1fr)`;
+  g.dataset.lado = String(N);
+  g.innerHTML = "";
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const d = document.createElement("div");
+    d.className="cell"; d.dataset.r=r; d.dataset.c=c;
+    d.innerHTML = '<i></i><span>'+P.grid[r][c]+'</span>';
+    g.appendChild(d);
+  }
+  pintarPalabras();
+  marcarEncontradas();
+}
+function pintarPalabras(){
+  $("#words").innerHTML = P.palabras.map(p=>{
+    const es = (P.modoRespondido && p.resp && p.resp.sol) ? '<span class="es">'+p.resp.sol+'</span>' : '';
+    return '<span class="wchip'+(p.found?' done':'')+'">'+p.e.w+es+'</span>';
+  }).join("");
+}
+function marcarEncontradas(){
+  P.palabras.forEach(p=>{ if(p.found) p.cells.forEach(x=>{ const el=cellEl(x.r,x.c); if(el) el.classList.add("done"); }); });
+}
+function cellEl(r,c){ return $("#grid").children[r*N+c]; }
+function say(t){ $("#say").textContent = t; }
+
+/* ============ selección ============ */
+let anchor=null, selCells=[];
+function cellFromPoint(x,y){
+  const rect = $("#grid").getBoundingClientRect();
+  const cw = rect.width/N, ch = rect.height/N;
+  const c = Math.floor((x-rect.left)/cw), r = Math.floor((y-rect.top)/ch);
+  if(r<0||r>=N||c<0||c>=N) return null;
+  return {r,c};
+}
+function snap(a,b){
+  const dr=b.r-a.r, dc=b.c-a.c;
+  if(!dr && !dc) return [{r:a.r,c:a.c}];
+  let best=null;
+  for(const [er,ec] of DIRS){
+    const k = Math.round((dr*er+dc*ec)/(er*er+ec*ec));
+    if(k<=0) continue;
+    const err = Math.pow(a.r+k*er-b.r,2) + Math.pow(a.c+k*ec-b.c,2);
+    if(!best || err<best.err || (err===best.err && k>best.k)) best={er,ec,k,err};
+  }
+  if(!best) return [{r:a.r,c:a.c}];
+  let k=best.k;
+  while(k>0 && (a.r+k*best.er<0 || a.r+k*best.er>=N || a.c+k*best.ec<0 || a.c+k*best.ec>=N)) k--;
+  const out=[]; for(let i=0;i<=k;i++) out.push({r:a.r+i*best.er, c:a.c+i*best.ec});
+  return out;
+}
+function clearSel(){ $$("#grid .cell.sel").forEach(e=>e.classList.remove("sel")); selCells=[]; }
+function drawSel(cells){
+  clearSel(); selCells=cells;
+  cells.forEach(x=>{ const el=cellEl(x.r,x.c); if(el) el.classList.add("sel"); });
+}
+
+$("#grid").addEventListener("pointerdown", e=>{
+  const p = cellFromPoint(e.clientX,e.clientY); if(!p) return;
+  anchor = p; drawSel([p]);
+  $("#grid").setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+$("#grid").addEventListener("pointermove", e=>{
+  if(!anchor) return;
+  const p = cellFromPoint(e.clientX,e.clientY); if(!p) return;
+  drawSel(snap(anchor,p));
+});
+$("#grid").addEventListener("pointerup", e=>{
+  if(!anchor) return;
+  const cells = selCells.slice(); anchor=null;
+  const s = cells.map(x=>P.grid[x.r][x.c]).join("");
+  const rev = s.split("").reverse().join("");
+  const hit = P.palabras.find(p=>!p.found && (p.e.w.toUpperCase()===s || p.e.w.toUpperCase()===rev));
+  if(hit && cells.length>1){
+    hit.found = true; hit.cells = cells;
+    cells.forEach(x=>{ const el=cellEl(x.r,x.c); if(el) el.classList.add("done"); });
+    clearSel(); pintarPalabras();
+    ev("encontro", { sopa:P.idx, palabra:hit.e.w });
+    if(S.modo === "pregunta") setTimeout(()=>preguntar(hit), 260);
+    else {
+      const faltan = P.palabras.filter(p=>!p.found).length;
+      say(faltan ? pick(Math.random, ["Esa es. Faltan "+faltan+".","Muy bien, mi amor. Quedan "+faltan+".","Vas bien. Faltan "+faltan+"."]) : "Las encontraste todas. Ahora sí, unas preguntitas.");
+      if(!faltan) setTimeout(repasar, 500);
+    }
+  } else {
+    clearSel();
+  }
+});
+$("#grid").addEventListener("pointercancel", ()=>{ anchor=null; clearSel(); });
+
+/* ============ preguntas ============ */
+let cola=[], qActual=null, qStart=0;
+function preguntar(p){ cola=[p]; siguiente(); }
+function repasar(){ cola = P.palabras.filter(p=>!p.resp); if(cola.length) siguiente(); else terminarSopa(); }
+function siguiente(){
+  qActual = cola.shift();
+  if(!qActual){ cerrarSheet(); if(P.palabras.every(p=>p.found)) terminarSopa(); return; }
+  qStart = Date.now();
+  const e = qActual.e;
+  $("#sheet").innerHTML = `
+    <div class="qhead">
+      <span class="qword">${e.w}</span>
+      <span class="qbadge">${e.l} · ${CORPUS.temas[e.t]}</span>
+      <span style="flex:1"></span>
+      <span class="langsw" id="lang">
+        <button data-lang="en" type="button">EN</button>
+        <button data-lang="es" type="button">ES</button>
+      </span>
+    </div>
+    <p class="qdef" id="qdef"></p>
+    <div class="qask"><svg class="abuela" style="width:32px;height:32px" aria-hidden="true"><use href="#ab"/></svg><span>¿Cómo se dice en español, mi amor?</span></div>
+    <input id="ans" placeholder="escribe aquí…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" inputmode="text">
+    <div class="qrow">
+      <button class="btn" id="ok">Listo</button>
+      <button class="btn ghost" id="dunno">No me sale</button>
+    </div>`;
+  $("#veil").classList.add("on");
+  pintarDef();
+  $$("#lang button").forEach(b=>{
+    b.onclick = ()=>{
+      if(S.idiomaDef === b.dataset.lang) return;
+      S.idiomaDef = b.dataset.lang; save();
+      ev("cambio_idioma_def", { a:S.idiomaDef, sopa:P.idx, palabra:e.w });
+      pintarDef();
+    };
+  });
+  ev("pregunta", { sopa:P.idx, palabra:e.w, idiomaDef:S.idiomaDef });
+  const inp = $("#ans");
+  setTimeout(()=>{ try{ inp.focus(); }catch(x){} }, 90);
+  $("#ok").onclick = ()=>evaluar(inp.value);
+  $("#dunno").onclick = ()=>evaluar(null);
+  inp.onkeydown = k=>{ if(k.key==="Enter"){ k.preventDefault(); evaluar(inp.value); } };
+}
+function pintarDef(){
+  const e = qActual.e, es = S.idiomaDef === "es";
+  const d = $("#qdef"); if(!d) return;
+  d.textContent = es ? (e.ds || e.d) : e.d;
+  d.lang = es ? "es" : "en";
+  $$("#lang button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===S.idiomaDef ? "true":"false"));
+}
+function evaluar(raw){
+  const e = qActual.e;
+  const dt = Date.now()-qStart;
+  const sol = e.a[0];
+  let estado, msg;
+  if(raw === null){
+    estado = "rendido";
+    msg = `<b>Ya te la digo yo:</b> <span class="sol">${sol}</span>. Anótala por ahí, que vuelve.`;
+  } else {
+    const n = norm(raw);
+    const acc = e.a.map(norm);
+    if(!n){ estado="vacio"; msg = `Es <span class="sol">${sol}</span>, mi amor. Sigamos.`; }
+    else if(acc.includes(n)){ estado="acierto"; msg = pick(Math.random,["<b>¡Esa es, mi amor!</b>","<b>Así me gusta.</b> Esa te salió sola.","<b>Uy, qué rápido.</b>","<b>Bien, mi vida.</b>"]); }
+    else if(acc.some(a=>lev(n,a)===1)){ estado="casi"; msg = `<b>Casi, casi.</b> Se escribe <span class="sol">${sol}</span>.`; }
+    else { estado="falla"; msg = `Es <span class="sol">${sol}</span>. No importa, mi amor, esa es difícil.`; }
+  }
+  qActual.resp = { estado, sol, raw: raw||"", ms: dt };
+  S.respuestas.push({ sopa:P.idx, palabra:e.w, estado, raw: raw||"", ms: dt });
+  ev("respuesta", { sopa:P.idx, palabra:e.w, estado, ms:dt });
+  P.modoRespondido = true; pintarPalabras();
+
+  const cls = estado==="acierto" ? "ok" : (estado==="casi" ? "near" : "miss");
+  $("#sheet").innerHTML = `
+    <div class="qhead"><span class="qword">${e.w}</span><span class="qbadge">${e.l}</span></div>
+    <div class="verdict ${cls}"><svg class="abuela" style="width:30px;height:30px;color:currentColor" aria-hidden="true"><use href="#ab"/></svg><span>${msg}</span></div>
+    <p class="qdef" style="font-size:.94rem"><i>${e.e}</i></p>
+    <button class="btn wide" id="next">${cola.length ? "Siguiente" : "Seguir jugando"}</button>`;
+  $("#next").onclick = siguiente;
+}
+function cerrarSheet(){ $("#veil").classList.remove("on"); }
+
+/* ============ fin de sopa ============ */
+function terminarSopa(){
+  cerrarSheet();
+  if(!P.dia) S.sopasCompletadas++;
+  ev("sopa_terminada", { sopa:P.idx, seguidas:S.sopasSeguidas });
+  const rs = S.respuestas.filter(r=>r.sopa===P.idx);
+  const ok = rs.filter(r=>r.estado==="acierto").length;
+  const casi = rs.filter(r=>r.estado==="casi").length;
+  $("#tally").innerHTML = statHTML(ok, casi, rs.length);
+
+  // La del dia guarda su resultado: es lo que se comparte, y es lo que deja el
+  // hueco a la vista en la semana si alguien falto.
+  $("#compartirFin").hidden = !P.dia;
+  if(P.dia){
+    const marcas = P.palabras.map(p => p.resp ? p.resp.estado : "fallo");
+    const seg = Math.max(1, Math.round((Date.now() - (P.t0 || Date.now()))/1000));
+    guardarDia(P.dia, { ok, casi, tot:P.palabras.length, seg, marcas,
+                        variante:P.variante, lado:P.grid.length });
+    ev("diaria_terminada", { dia:P.dia, ok, casi, seg, modo:S.modo, variante:P.variante });
+  }
+
+  // La abuela premia segun como fue, y nunca regana.
+  const razon = rs.length ? (ok + casi*0.5) / rs.length : 0;
+  const P_PERFECTO = ["¡Todas, mi amor! Si sigues así me vas a terminar enseñando tú a mí.",
+                      "Ni una se te escapó. Voy a tener que buscarte palabras más difíciles.",
+                      "Perfecta. Esta sopa te quedó como a mí las de los domingos."];
+  const P_BIEN     = ["Muy bien, mi vida. Casi todas.",
+                      "Así me gusta, ya le agarraste el ritmo.",
+                      "Te salieron casi todas. Vas bien encaminada."];
+  const P_MEDIO    = ["Vamos bien. Estas cosas se aprenden de a poquito.",
+                      "Tranquila, que nadie nació sabiendo.",
+                      "De a poco, mi amor. Yo llevo ochenta años y todavía aprendo."];
+  const P_FLOJO    = ["No importa, mi amor. Yo tampoco me las sabía al principio.",
+                      "Lo que importa es que te sentaste un rato conmigo.",
+                      "Ya irán saliendo. Nadie aprende de un tirón."];
+  $("#finTitle").textContent = razon === 1 ? "¡Todas!" : pick(Math.random,["Terminaste la sopa","Ahí está, completita","Listo, mi amor"]);
+  $("#finSay").textContent = pick(Math.random, razon === 1 ? P_PERFECTO : razon >= .7 ? P_BIEN : razon >= .4 ? P_MEDIO : P_FLOJO);
+  if(P.dia) $("#finTitle").textContent = razon === 1 ? "¡Todas, y era la de hoy!" : "La sopa de hoy, lista";
+
+  const aprendidas = P.palabras.filter(p=>p.resp && p.resp.estado === "acierto");
+  const costaron   = P.palabras.filter(p=>p.resp && p.resp.estado !== "acierto");
+  const chips = (lista, clase) => lista.map(p =>
+    `<span class="repchip ${clase}"><b>${p.e.w}</b><span>${p.resp.sol}</span></span>`).join("");
+  let rep = "";
+  if(aprendidas.length) rep += `<div class="repbloc">
+      <div class="reptit gano">Te las llevas · ${aprendidas.length}</div>
+      <div class="repchips">${chips(aprendidas, "gano")}</div></div>`;
+  if(costaron.length) rep += `<div class="repbloc">
+      <div class="reptit costo">Estas te costaron · ${costaron.length}</div>
+      <div class="repchips">${chips(costaron, "costo")}</div>
+      <p class="note" style="font-size:.82rem">Vuelven en otra sopa, no te preocupes.</p></div>`;
+  $("#repaso").innerHTML = rep;
+
+  ev("resumen_sopa", { sopa:P.idx, aprendidas:aprendidas.map(p=>p.e.w), costaron:costaron.map(p=>p.e.w), razon:Math.round(razon*100)/100 });
+  show("fin");
+}
+function statHTML(ok, casi, tot){
+  return `<div class="tstat"><div class="k">Sopas seguidas</div><div class="v">${S.sopasSeguidas+1}</div></div>
+          <div class="tstat"><div class="k">Le atinó</div><div class="v">${ok}<span style="font-size:1rem;color:var(--ink-3)">/${tot||WORDS_PER}</span></div></div>
+          <div class="tstat"><div class="k">Casi</div><div class="v">${casi}</div></div>`;
+}
+
+$("#again").onclick = ()=>{
+  S.sopasSeguidas++; save();
+  ev("otra_sopa", { seguidas:S.sopasSeguidas });
+  arrancarSopa(S.sopasCompletadas);
+};
+// «Ya está bueno» era una despedida sin salida; ahora es la vuelta al inicio.
+// La cuenta de en qué sopa se plantó se sigue registrando igual.
+$("#stop").onclick = ()=>{
+  S.detuvo = S.sopasSeguidas + 1; save();
+  ev("se_detuvo", { sopasSeguidas:S.detuvo });
+  P = null; pintarHoy(); show("inicio");
+};
+
+/* ============ arranque ============ */
+function arrancarSopa(idx){
+  P = nuevaSopa(idx);
+  P.modoRespondido = false;
+  pintar();
+  const cuantas = ["","una","dos","tres","cuatro","cinco","seis","siete","ocho","nueve"][P.palabras.length] || P.palabras.length;
+  say(S.modo==="pregunta"
+    ? "Busca una y te pregunto. Sin apuro, ¿eh?"
+    : "Busca las " + cuantas + ", mi amor. Después charlamos.");
+  ev("sopa_inicio", { sopa:idx, tema:P.tema, seed:P.seed, nivel:S.nivel, tamano:S.tamano, palabras:P.palabras.length });
+  show("juego");
+}
+/* ---- nivel de inglés y tamaño de la sopa ---- */
+function pintarPistas(){
+  const niv = NIVELES[S.nivel] || NIVELES.facil;
+  const tam = TAMANOS[S.tamano] || TAMANOS.mediana;
+  $("#pistaNivel").innerHTML = niv.pista;
+  $("#pistaTamano").innerHTML = tam.pista;
+  $$("#segNivel .segbtn").forEach(x=>x.setAttribute("aria-pressed", x.dataset.nivel===S.nivel ? "true":"false"));
+  $$("#segTamano .segbtn").forEach(x=>x.setAttribute("aria-pressed", x.dataset.tamano===S.tamano ? "true":"false"));
+}
+// En fase 0 solo "Algo" y "Mediana" estan activas: una sola configuracion mantiene
+// limpia la metrica. Las demas quedan a la vista para medir si alguien las quiere.
+function bloqueada(b, tipo, valor){
+  S.toquesBloqueados = (S.toquesBloqueados||0) + 1;
+  S.interes = S.interes || {};
+  S.interes[valor] = (S.interes[valor]||0) + 1;
+  save();
+  ev("toco_bloqueada", { tipo, valor, veces:S.interes[valor] });
+  avisoNoDisponible(valor);
+}
+$$("#segNivel .segbtn").forEach(b=>{
+  b.onclick = ()=>{
+    if(b.dataset.off) return bloqueada(b, "nivel", b.dataset.nivel);
+    if(S.nivel !== b.dataset.nivel){ S.nivel = b.dataset.nivel; S.cambiosDificultad++; ev("eligio_nivel", { nivel:S.nivel }); }
+    save(); pintarPistas();
+  };
+});
+$$("#segTamano .segbtn").forEach(b=>{
+  b.onclick = ()=>{
+    if(b.dataset.off) return bloqueada(b, "tamano", b.dataset.tamano);
+    if(S.tamano !== b.dataset.tamano){ S.tamano = b.dataset.tamano; S.cambiosDificultad++; ev("eligio_tamano", { tamano:S.tamano }); }
+    save(); pintarPistas();
+  };
+});
+const ETIQUETA = { facil:"Poco", dificil:"Bastante", chica:"Chica", grande:"Grande" };
+function avisoNoDisponible(valor){
+  $("#sheet").innerHTML = `
+    <div class="qhead"><span class="qword">${ETIQUETA[valor]||"Esa opción"}</span><span class="qbadge">todavía no</span></div>
+    <div class="verdict miss">
+      <svg class="abuela" style="width:30px;height:30px;color:currentColor" aria-hidden="true"><use href="#ab"/></svg>
+      <span>Todavía no la tengo lista, mi amor. Por ahora jugamos con <b>Algo</b> de inglés y sopa <b>Mediana</b>, que es lo que alcancé a preparar.</span>
+    </div>
+    <button class="btn wide" id="next">Está bien</button>`;
+  $("#veil").classList.add("on");
+  $("#next").onclick = cerrarSheet;
+}
+
+$("#start").onclick = ()=>{
+  if(!S.modo) S.modo = S.modoAsignado || "pregunta";
+  S.inicio = S.inicio || Date.now(); save();
+  ev("sesion_inicio", { modo:S.modo, asignado:S.modoAsignado, nivel:S.nivel, tamano:S.tamano,
+                        cambiosAntesDeEmpezar:S.cambiosDificultad, pid:S.pid, anos:S.anos });
+  arrancarSopa(S.sopasCompletadas);
+};
+// El ritmo se cambia sin perder lo que ya llevas: la misma hoja de las
+// preguntas, con las dos opciones que antes vivian en el inicio.
+function abrirConfig(){
+  $("#sheet").innerHTML = `
+    <div class="qhead"><span class="qword">Configuración</span></div>
+    <div class="modepick">
+      <button class="modeopt" data-cfg="pregunta" aria-pressed="${S.modo === "pregunta"}">
+        <span class="dot"></span>
+        <span>
+          <span class="mt">La abuela pregunta</span>
+          <span class="md">Cada palabra que encuentras, la abuela te pregunta ahí mismo.</span>
+        </span>
+      </button>
+      <button class="modeopt" data-cfg="tranquila" aria-pressed="${S.modo === "tranquila"}">
+        <span class="dot"></span>
+        <span>
+          <span class="mt">Sopa tranquila</span>
+          <span class="md">Primero encuentras todas las palabras. El repaso viene al final.</span>
+        </span>
+      </button>
+    </div>
+    <button class="btn wide" id="cerrarConfig">Listo</button>`;
+  $("#veil").classList.add("on");
+  $$("#sheet [data-cfg]").forEach(b=>{
+    b.onclick = ()=>{
+      $$("#sheet [data-cfg]").forEach(x=>x.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      if(S.modo !== b.dataset.cfg){
+        S.modo = b.dataset.cfg; save();
+        ev("cambio_ritmo", { modo:S.modo, sopa:P?P.idx:null });
+        toast(S.modo === "pregunta" ? "Ritmo: la abuela pregunta" : "Ritmo: sopa tranquila");
+      }
+    };
+  });
+  $("#cerrarConfig").onclick = cerrarSheet;
+}
+$("#config").onclick = abrirConfig;
+
+// Dejar la sopa a medias pierde lo hecho, asi que la abuela pregunta primero.
+// Se usa la misma hoja que las preguntas, no un confirm() del navegador.
+$("#salir").onclick = ()=>{
+  const hechas = P ? P.palabras.filter(p=>p.found).length : 0;
+  $("#sheet").innerHTML = `
+    <div class="qhead"><span class="qword">¿Dejamos la sopa?</span></div>
+    <div class="qask">
+      <svg class="abuela" style="width:32px;height:32px" aria-hidden="true"><use href="#ab"/></svg>
+      <span>Si la dejamos acá se pierde lo que llevas, mi amor.</span>
+    </div>
+    <div class="qrow">
+      <button class="btn" id="seguir">Seguir buscando</button>
+      <button class="btn ghost" id="dejarla">Sí, dejarla</button>
+    </div>`;
+  $("#veil").classList.add("on");
+  $("#seguir").onclick = cerrarSheet;
+  $("#dejarla").onclick = ()=>{
+    ev("abandono", { sopa:P?P.idx:null, dia:P?P.dia:null, encontradas:hechas, de:P?P.palabras.length:0 });
+    cerrarSheet(); P = null; pintarHoy(); show("inicio");
+  };
+};
+$("#backGame").onclick = ()=>{ if(!P) pintarHoy(); show(P ? "juego" : "inicio"); };
+
+/* ---- la sopa del dia: pantalla e hilos ---- */
+function pintarHoy(){
+  const hoy = hoyClave(), hecho = diaHecho(hoy);
+  $("#hoyFecha").textContent = "Hoy, " + fechaLarga(hoy);
+  const suya = DIARIA[varianteDiaria(S.anos)];
+  $("#hoyTexto").textContent = hecho
+    ? "Ya la hiciste, mi amor: " + hecho.ok + " de " + hecho.tot + ". Mañana pongo otra."
+    : "La de hoy: " + suya.dice + ". Se hace en un ratito.";
+  $("#jugarHoy").hidden = !!hecho;
+  $("#compartirHoy").hidden = !hecho;
+  $("#semana").innerHTML = ultimosDias().map(clave=>{
+    const r = diaHecho(clave);
+    const estado = r ? "hecha" : (clave === hoy ? "hoy" : "falto");
+    const dia = +clave.split("-")[2];
+    const pie = r ? r.ok+"/"+r.tot : (clave === hoy ? "hoy" : "—");
+    return '<button class="diachip" data-dia="'+clave+'" data-estado="'+estado+'"><b>'+dia+'</b><span>'+pie+'</span></button>';
+  }).join("");
+  $$("#semana .diachip").forEach(b=>{
+    b.onclick = ()=>{
+      const clave = b.dataset.dia, r = diaHecho(clave);
+      // Una por dia: la que ya se jugo se mira, no se rehace.
+      if(r) return toast(fechaLarga(clave) + ": " + r.ok + " de " + r.tot);
+      arrancarDiaria(clave);
+    };
+  });
+}
+function arrancarDiaria(clave){
+  if(!S.modo) S.modo = S.modoAsignado || "pregunta";
+  S.inicio = S.inicio || Date.now(); save();
+  P = sopaDelDia(clave);
+  P.modoRespondido = false;
+  P.t0 = Date.now();
+  pintar();
+  const cuantas = ["","una","dos","tres","cuatro","cinco","seis","siete","ocho","nueve"][P.palabras.length] || P.palabras.length;
+  say(S.modo === "pregunta"
+    ? "La sopa de hoy. Busca una y te pregunto."
+    : "La sopa de hoy, mi amor. Son " + cuantas + ", sin apuro.");
+  ev("diaria_inicio", { dia:clave, tema:P.tema, seed:P.seed, modo:S.modo, palabras:P.palabras.length });
+  show("juego");
+}
+async function compartir(clave){
+  const r = diaHecho(clave);
+  if(!r) return;
+  const txt = textoCompartible(clave, r);
+  ev("compartio", { dia:clave });
+  if(navigator.share){
+    try{ await navigator.share({ text:txt }); return; }
+    catch(e){ if(e && e.name === "AbortError") return; }
+  }
+  try{ await navigator.clipboard.writeText(txt); toast("Copiado — pégalo donde quieras"); }
+  catch(e){
+    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); toast("Copiado"); }catch(x){ toast("No se pudo copiar"); }
+    ta.remove();
+  }
+}
+$("#jugarHoy").onclick = ()=>arrancarDiaria(hoyClave());
+$("#compartirHoy").onclick = ()=>compartir(hoyClave());
+$("#compartirFin").onclick = ()=>compartir(P && P.dia ? P.dia : hoyClave());
+
+/* ---- la cerradura: pantalla e hilos ---- */
+let llaveAbierta = false;   // se cierra sola al salir del panel
+let llaveModo = "abrir";    // abrir · nueva · repetir
+let llaveBuf = "", llavePrimera = "", llaveTic = null;
+
+function pintarPuntos(mal){
+  const d = $("#pinDots");
+  d.innerHTML = Array.from({length:PIN_LARGO},
+    (_,i)=>'<span class="pindot'+(i < llaveBuf.length ? " on" : "")+'"></span>').join("");
+  d.classList.toggle("mal", !!mal);
+  if(mal) setTimeout(()=>d.classList.remove("mal"), 430);
+}
+function llaveDice(t){ $("#llaveSay").textContent = t; }
+function pedirLlave(modo){
+  llaveModo = modo || "abrir";
+  llaveBuf = ""; llavePrimera = "";
+  $("#llaveTitulo").textContent = llaveModo === "abrir" ? "La cocina" : "La clave nueva";
+  llaveDice(llaveModo === "abrir"
+    ? "Por acá no, mi amor. Esta parte es para el que toma notas."
+    : "Elegí cuatro números. Anotalos donde no se pierdan.");
+  pintarPuntos(false);
+  refrescarCerrojo();
+  show("llave");
+}
+// Mientras dura la espera el teclado queda muerto y la cuenta baja sola.
+function refrescarCerrojo(){
+  const c = cerrojoLeer(), ahora = Date.now();
+  if(llaveModo === "abrir" && cerrojoBloqueado(c, ahora)){
+    $("#pinPad").dataset.off = "1";
+    llaveDice("Esperá " + cerrojoRestante(c, ahora) + " segundos, mi amor. Ya probaste bastante.");
+    if(!llaveTic) llaveTic = setInterval(refrescarCerrojo, 1000);
+  }else{
+    delete $("#pinPad").dataset.off;
+    if(llaveTic){
+      clearInterval(llaveTic); llaveTic = null;
+      if(llaveModo === "abrir") llaveDice("Probá de nuevo, mi amor.");
+    }
+  }
+}
+function llaveTecla(k){
+  if(k === "salir"){ llaveBuf = ""; if(!P) pintarHoy(); return show(P ? "juego" : "inicio"); }
+  if(k === "borrar"){ llaveBuf = llaveBuf.slice(0, -1); return pintarPuntos(false); }
+  if(llaveBuf.length >= PIN_LARGO) return;
+  llaveBuf += k;
+  pintarPuntos(false);
+  if(llaveBuf.length === PIN_LARGO) setTimeout(resolverLlave, 130);
+}
+function resolverLlave(){
+  const pin = llaveBuf;
+  llaveBuf = "";
+  if(llaveModo === "abrir"){
+    if(pinCorrecto(pin)){
+      cerrojoGuardar(cerrojoNuevo());
+      llaveAbierta = true;
+      ev("panel_abierto", {});
+      return show("mod");
+    }
+    const c = cerrojoFallo(cerrojoLeer(), Date.now());
+    cerrojoGuardar(c);
+    ev("panel_clave_mala", { fallos:c.fallos });
+    pintarPuntos(true);
+    llaveDice("Esa no es, mi amor.");
+    return refrescarCerrojo();
+  }
+  if(llaveModo === "nueva"){
+    llavePrimera = pin;
+    llaveModo = "repetir";
+    pintarPuntos(false);
+    return llaveDice("Otra vez, para estar seguros.");
+  }
+  if(pin === llavePrimera){
+    pinCambiar(pin);
+    cerrojoGuardar(cerrojoNuevo());
+    llaveAbierta = true;
+    ev("panel_clave_cambiada", {});
+    show("mod");
+    toast("Clave cambiada");
+  }else{
+    llaveModo = "nueva"; llavePrimera = "";
+    pintarPuntos(true);
+    llaveDice("No coinciden. Empezamos de nuevo.");
+  }
+}
+$$("#pinPad .pinkey").forEach(b=>{ b.onclick = ()=>llaveTecla(b.dataset.k); });
+$("#cambiarClave").onclick = ()=>pedirLlave("nueva");
+$("#abrirMod").onclick = ()=>pedirLlave("abrir");
+
+/* ---- la compuerta de edad ---- */
+// Se pregunta una sola vez y queda guardada en este telefono. No hay saltear:
+// sin edad no hay variante de sopa que elegir, y el deslizador siempre trae un
+// numero puesto, asi que «Listo» nunca se queda sin respuesta.
+function pintarEdad(){ $("#edadNum").textContent = $("#edadRango").value; }
+function pedirEdad(){
+  $("#edadRango").value = String(typeof S.anos === "number" ? S.anos : 30);
+  pintarEdad();
+  show("edadg");
+}
+$("#edadRango").oninput = pintarEdad;
+$("#edadListo").onclick = ()=>{
+  S.anos = parseInt($("#edadRango").value, 10);
+  const v = varianteDiaria(S.anos);
+  save();
+  ev("edad_declarada", { anos:S.anos, variante:v, lado:ladoDiaria(v) });
+  pintarHoy();
+  show("inicio");
+};
+
+/* ============ moderador ============ */
+$("#pid").oninput = e=>{ S.pid=e.target.value; save(); };
+$$("#mod .modeopt").forEach(b=>{
+  b.onclick = ()=>{
+    $$("#mod .modeopt").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    S.modoAsignado = b.dataset.fmode; S.modo = b.dataset.fmode; save();
+    toast("Modo asignado: "+b.dataset.fmode);
+  };
+});
+function renderMod(){
+  const rs = S.respuestas;
+  const ladoSuyo = ladoDiaria(varianteDiaria(S.anos));
+  const edadTxt = typeof S.anos === "number"
+    ? S.anos + " años · sopa del día " + ladoSuyo + "×" + ladoSuyo
+    : "sin declarar";
+  const ok = rs.filter(r=>r.estado==="acierto").length;
+  const casi = rs.filter(r=>r.estado==="casi").length;
+  const rend = rs.filter(r=>r.estado==="rendido").length;
+  const tiempos = rs.map(r=>r.ms).filter(Boolean).sort((a,b)=>a-b);
+  const mediana = tiempos.length ? (tiempos[Math.floor(tiempos.length/2)]/1000).toFixed(1)+" s" : "—";
+  $("#metrics").innerHTML = `
+    <div class="kv"><span>Sopas seguidas sin que se le pida</span><span>${S.sopasSeguidas + (S.sopasCompletadas?1:0)}</span></div>
+    <div class="kv"><span>Se detuvo en la sopa</span><span>${S.detuvo || "—"}</span></div>
+    <div class="kv"><span>Modo</span><span>${S.modo || "—"}</span></div>
+    <div class="kv"><span>Edad declarada</span><span>${edadTxt}</span></div>
+    <div class="kv"><span>Eligió · nivel / tamaño</span><span>${S.nivel || "—"} / ${S.tamano || "—"}</span></div>
+    <div class="kv"><span>Idioma de la definición</span><span>${S.idiomaDef === "es" ? "español" : "inglés"}</span></div>
+    <div class="kv"><span>Cambios de idioma</span><span>${S.eventos.filter(x=>x.type==="cambio_idioma_def").length}</span></div>
+    <div class="kv"><span>Tocó opciones no disponibles</span><span>${S.toquesBloqueados || 0}${Object.keys(S.interes||{}).length ? " · " + Object.keys(S.interes).join(", ") : ""}</span></div>
+    <div class="kv"><span>Aciertos / preguntas</span><span>${ok} / ${rs.length}</span></div>
+    <div class="kv"><span>Casi</span><span>${casi}</span></div>
+    <div class="kv"><span>«No me sale»</span><span>${rend}</span></div>
+    <div class="kv"><span>Mediana por respuesta</span><span>${mediana}</span></div>
+    <div class="kv"><span>Duración de la sesión</span><span>${Math.round((Date.now()-S.inicio)/60000)} min</span></div>`;
+  $("#dump").textContent = JSON.stringify(S);
+}
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"), 1800); }
+$("#copy").onclick = async ()=>{
+  const txt = JSON.stringify(S, null, 1);
+  try{ await navigator.clipboard.writeText(txt); toast("Copiado"); }
+  catch(e){
+    const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand("copy"); toast("Copiado"); }catch(x){ toast("No se pudo copiar"); }
+    ta.remove();
+  }
+};
+$("#dl").onclick = async ()=>{
+  const name = "sopa-fase1-"+(S.pid||"sin-id")+".json";
+  const txt = JSON.stringify(S, null, 1);
+  // Dentro del visor de artefactos la descarga pasa por el runtime; en un archivo
+  // suelto —que es como se usa en la sesion de campo— hay que armarla a mano.
+  const dl = await (window.claude && window.claude.use ? window.claude.use("downloads") : Promise.resolve(null));
+  if(dl){
+    try{ await dl.save({ filename:name, data:txt }); toast("Guardado"); return; }catch(e){}
+  }
+  try{
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(new Blob([txt], { type:"application/json" }));
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    toast("Descargado");
+  }catch(e){ toast("No se pudo descargar — usa Copiar"); }
+};
+$("#reset").onclick = ()=>{
+  if(!confirm("¿Borrar los datos de esta sesión y empezar una nueva?")) return;
+  const prev = S.modoAsignado === "tranquila" ? "pregunta" : "tranquila";
+  S = fresh(); S.modoAsignado = prev; S.modo = prev; save();
+  $$("#lang button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.lang==="en" ? "true":"false"));
+  P = null;
+  $("#pid").value="";
+  $$("#mod .modeopt").forEach(x=>x.setAttribute("aria-pressed", x.dataset.fmode===prev ? "true":"false"));
+  pintarPistas();
+  renderMod(); toast("Sesión nueva · modo "+prev); pedirEdad();
+};
+
+/* ============ tenerla en el telefono ============ */
+// Sobre file:// no hay service worker: hace falta http, y localhost cuenta como
+// origen seguro igual que https. Al abrir el archivo suelto —que es como se
+// corren las sesiones con moderador— esto no hace nada, y está bien así.
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+}
+// Android avisa antes de ofrecer la instalación y deja elegir cuándo pedirla.
+// Sin este botón casi nadie llega al menú de tres puntos, y el ícono en la
+// pantalla del teléfono es la mitad de por qué existe «vuelve mañana».
+let instalador = null;
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault();
+  instalador = e;
+  $("#instalar").hidden = false;
+});
+$("#instalar").onclick = async ()=>{
+  if(!instalador) return;
+  ev("instalar_ofrecido", {});
+  instalador.prompt();
+  const r = await instalador.userChoice.catch(()=>({ outcome:"error" }));
+  ev("instalar_respuesta", { respuesta: r && r.outcome });
+  instalador = null;
+  $("#instalar").hidden = true;
+};
+window.addEventListener("appinstalled", ()=>{
+  ev("instalada", {});
+  $("#instalar").hidden = true;
+});
+
+/* ============ init ============ */
+$("#pid").value = S.pid || "";
+if(S.modoAsignado) $$("#mod .modeopt").forEach(x=>x.setAttribute("aria-pressed", x.dataset.fmode===S.modoAsignado ? "true":"false"));
+if(!NIVELES[S.nivel]) S.nivel = "facil";
+if(!TAMANOS[S.tamano]) S.tamano = "mediana";
+pintarPistas();
+pintarHoy();
+if(new URLSearchParams(location.search).get("mod")==="1") pedirLlave("abrir");
+else if(typeof S.anos !== "number") pedirEdad();
+renderMod();
+</script>
