@@ -456,6 +456,10 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
       <span class="counter" id="sopaN">Sopa 1</span>
       <span class="themepill" id="tema">La cocina</span>
       <div style="display:flex;gap:8px">
+        <!-- TEMPORAL · atajo de prueba: saltar a la sopa siguiente sin terminarla.
+             Se quita entero (este boton, el hidden de pintar() y el onclick) cuando
+             se termine de probar. Nunca aparece en la sopa del dia. -->
+        <button class="iconbtn" id="saltar" aria-label="Siguiente sopa (prueba)" title="Siguiente sopa" hidden>⏭</button>
         <button class="iconbtn" id="config" aria-label="Configuración">⚙</button>
         <button class="iconbtn" id="salir" aria-label="Volver al inicio">←</button>
       </div>
@@ -847,6 +851,7 @@ function show(id){
 /* ============ dibujar ============ */
 function pintar(){
   $("#sopaN").textContent = P.dia ? "Sopa del día" : "Sopa " + (P.idx+1);
+  $("#saltar").hidden = !!P.dia; // TEMPORAL · atajo de prueba
   $("#tema").textContent = CORPUS.temas[P.tema];
   const g = $("#grid");
   g.style.gridTemplateColumns = `repeat(${N},1fr)`;
@@ -1100,6 +1105,14 @@ $("#again").onclick = ()=>{
   ev("otra_sopa", { seguidas:S.sopasSeguidas });
   arrancarSopa(S.sopasCompletadas);
 };
+// TEMPORAL · atajo de prueba: adelanta a la sopa siguiente sin haberla
+// terminado, para poder ver muchas sopas seguidas. No toca las cuentas
+// (sopasCompletadas, sopasSeguidas) para no ensuciar los numeros del panel.
+$("#saltar").onclick = ()=>{
+  if(!P || P.dia) return;
+  arrancarSopa(P.idx + 1);
+};
+
 // «Ya está bueno» era una despedida sin salida; ahora es la vuelta al inicio.
 // La cuenta de en qué sopa se plantó se sigue registrando igual.
 $("#stop").onclick = ()=>{
