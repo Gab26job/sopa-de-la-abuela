@@ -979,7 +979,9 @@ function siguiente(){
   setTimeout(()=>{ try{ inp.focus(); }catch(x){} }, 90);
   $("#ok").onclick = ()=>evaluar(inp.value);
   $("#dunno").onclick = ()=>evaluar(null);
-  inp.onkeydown = k=>{ if(k.key==="Enter"){ k.preventDefault(); evaluar(inp.value); } };
+  // stopPropagation: si el mismo Enter siguiera subiendo, el oyente del
+  // documento lo tomaria como el "seguir" del veredicto y se saltaria la vuelta.
+  inp.onkeydown = k=>{ if(k.key==="Enter"){ k.preventDefault(); k.stopPropagation(); evaluar(inp.value); } };
 }
 function pintarDef(){
   const e = qActual.e, es = S.idiomaDef === "es";
@@ -1015,8 +1017,20 @@ function evaluar(raw){
     <div class="verdict ${cls}"><svg class="abuela" style="width:30px;height:30px;color:currentColor" aria-hidden="true"><use href="#ab"/></svg><span>${msg}</span></div>
     <p class="qdef" style="font-size:.94rem"><i>${e.e}</i></p>
     <button class="btn wide" id="next">${cola.length ? "Siguiente" : "Seguir jugando"}</button>`;
-  $("#next").onclick = siguiente;
+  const nx = $("#next");
+  nx.onclick = siguiente;
+  setTimeout(()=>{ try{ nx.focus({preventScroll:true}); }catch(x){} }, 60);
 }
+// Enter dos veces seguidas: la primera responde, la segunda pasa a lo que sigue.
+// El veredicto ya no tiene input donde escuchar la tecla, asi que la escucha el
+// documento mientras esa hoja siga arriba, aunque el foco se haya perdido.
+document.addEventListener("keydown", k=>{
+  if(k.key !== "Enter" || k.repeat) return;
+  if(!$("#veil").classList.contains("on")) return;
+  if(!$("#next")) return;
+  k.preventDefault();
+  siguiente();
+});
 function cerrarSheet(){ $("#veil").classList.remove("on"); }
 
 /* ============ fin de sopa ============ */
