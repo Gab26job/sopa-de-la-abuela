@@ -238,6 +238,21 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
   font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--ink-3);
 }
 
+/* ---- el motivo declarado ---- */
+/* Cuatro botones grandes y nada mas. El documento de retención pide que sea una
+   conversación y no un formulario, y un formulario se reconoce por el tamaño de
+   los controles antes que por las palabras. */
+.motivos{display:flex; flex-direction:column; gap:10px; width:100%; max-width:340px}
+.motivo{
+  display:flex; flex-direction:column; gap:3px; align-items:flex-start;
+  min-height:74px; padding:15px 17px; border-radius:14px; width:100%; text-align:left;
+  border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--shadow);
+  transition:transform .1s ease, border-color .14s ease, background .14s ease;
+}
+.motivo:active{transform:scale(.99); border-color:var(--cobalt); background:var(--cobalt-soft)}
+.motivo .mt{font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:1.06rem; color:var(--ink)}
+.motivo .md{font-size:.87rem; color:var(--ink-2); line-height:1.35}
+
 .gridwrap{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:8px; box-shadow:var(--shadow)}
 #grid{
   display:grid; gap:0; touch-action:none; user-select:none; -webkit-user-select:none;
@@ -371,6 +386,43 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
   opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
 }
 #toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* ---- la despensa ---- */
+/* Cada pantalla fija su propio ritmo vertical; .screen no trae gap. Esta va
+   pegada arriba y no centrada, porque la lista crece y centrarla la movería
+   cada vez que se guarda una palabra. */
+#despensa{justify-content:flex-start; align-items:center; gap:18px; padding:36px 0 44px; text-align:center}
+.despcard{align-items:stretch}
+.despnum{
+  font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:2.6rem;
+  line-height:1; font-variant-numeric:tabular-nums; color:var(--ink);
+}
+.despsub{color:var(--ink-2); font-size:.95rem}
+.hitoline{
+  background:var(--marigold-soft); color:var(--on-marigold); border-radius:13px;
+  padding:12px 16px; font-size:.97rem; max-width:360px; text-align:center;
+}
+.buscawrap{position:relative; width:100%; max-width:360px}
+#busca{
+  width:100%; box-sizing:border-box; font:inherit; font-size:1rem; padding:12px 14px;
+  border:1.5px solid var(--line-2); border-radius:12px; background:var(--surface-2);
+  color:var(--ink);
+}
+#busca::placeholder{color:var(--ink-3)}
+#busca:focus{outline:none; border-color:var(--cobalt); background:var(--surface)}
+.desplista{
+  display:flex; flex-direction:column; gap:6px; width:100%; max-width:360px;
+}
+.despfila{
+  display:flex; align-items:baseline; gap:10px; text-align:left; background:var(--surface);
+  border:1px solid var(--line); border-radius:11px; padding:10px 13px;
+}
+.despfila b{
+  font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:.92rem; color:var(--ink);
+}
+.despfila .es{color:var(--ink-2); font-size:.92rem; flex:1; text-align:left}
+.despfila .cuando{font-size:.72rem; color:var(--ink-3); white-space:nowrap}
+.despvacio{color:var(--ink-2); text-align:center; max-width:32ch; line-height:1.5}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ab" viewBox="0 0 48 48">
@@ -403,6 +455,36 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
     <button class="btn wide" id="edadListo" style="max-width:320px">Listo</button>
   </div>
 
+  <!-- ============ EL MOTIVO ============ -->
+  <!-- Una sola pregunta, después de la primera sopa terminada. Tiene salida:
+       preguntar dos veces es un formulario, y esta marca no hace formularios. -->
+  <div class="screen" id="motivog">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <h2>¿Para qué quieres el inglés?</h2>
+      <p class="tagline">Para saber qué palabras ponerte, mi amor. Te pregunto una sola vez.</p>
+    </div>
+    <div class="motivos">
+      <button class="motivo" data-motivo="viaje">
+        <span class="mt">Para viajar</span>
+        <span class="md">El aeropuerto, el hotel, preguntar por la calle</span>
+      </button>
+      <button class="motivo" data-motivo="trabajo">
+        <span class="mt">Para el trabajo</span>
+        <span class="md">Una entrevista, una reunión, un correo</span>
+      </button>
+      <button class="motivo" data-motivo="nietos">
+        <span class="mt">Por los nietos</span>
+        <span class="md">Para entenderles cuando hablan en inglés</span>
+      </button>
+      <button class="motivo" data-motivo="gusto">
+        <span class="mt">Por gusto</span>
+        <span class="md">Siempre quise, y ahora tengo el tiempo</span>
+      </button>
+    </div>
+    <button class="modlink" id="motivoLuego">Después te cuento</button>
+  </div>
+
   <!-- ============ INICIO ============ -->
   <div class="screen on" id="inicio">
     <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
@@ -418,6 +500,13 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
       <button class="btn soft wide" id="compartirHoy" hidden>Contar cómo me fue</button>
       <div class="semana" id="semana"></div>
       <p class="note">Si te perdiste alguna, las últimas siete siguen ahí.</p>
+    </div>
+
+    <div class="startcard despcard" id="cardDesp" hidden>
+      <div class="eyebrow">Tu despensa</div>
+      <div class="despnum" id="despNum">0</div>
+      <p class="despsub" id="despSub">palabras guardadas</p>
+      <button class="btn soft wide" id="verDespensa">Ver mis palabras</button>
     </div>
 
     <div class="startcard">
@@ -480,12 +569,33 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px var(-
       <p class="tagline" id="finSay">¿Otra? Todavía tengo agua caliente.</p>
     </div>
     <div class="tally" id="tally"></div>
+    <p class="hitoline" id="hito" hidden></p>
     <div class="finbtns">
       <button class="btn wide" id="compartirFin" hidden>Contar cómo me fue</button>
       <button class="btn wide" id="again">Otra sopa</button>
+      <button class="btn soft wide" id="verDespensaFin" hidden>Ver mi despensa</button>
       <button class="btn ghost wide" id="stop">Volver al inicio</button>
     </div>
     <div class="repaso" id="repaso"></div>
+  </div>
+
+  <!-- ============ LA DESPENSA ============ -->
+  <div class="screen" id="despensa">
+    <svg class="abuela big" aria-hidden="true"><use href="#ab"/></svg>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+      <h2>Tu despensa</h2>
+      <p class="tagline" id="despTit">Las palabras que ya te sabes.</p>
+    </div>
+    <div class="buscawrap">
+      <input id="busca" type="search" autocomplete="off" autocorrect="off"
+             spellcheck="false" placeholder="Buscar una palabra…"
+             aria-label="Buscar en la despensa">
+    </div>
+    <div class="desplista" id="despLista"></div>
+    <div class="finbtns">
+      <button class="btn wide" id="compartirDesp">Contar cuántas llevo</button>
+      <button class="btn ghost wide" id="despVolver">Volver</button>
+    </div>
   </div>
 
   <!-- ============ LA CERRADURA ============ -->
@@ -611,6 +721,23 @@ function lev(a,b){
   }
   return prev[n];
 }
+// El tiempo se resume con la mediana, nunca con el promedio: si suena el
+// telefono a mitad de una busqueda, un promedio se va a las nubes y la escalera
+// terminaria decidiendo por algo que no paso adentro del juego.
+function mediana(nums){
+  const a = nums.filter(x => typeof x === "number" && isFinite(x)).sort((x,y)=>x-y);
+  return a.length ? a[Math.floor(a.length/2)] : null;
+}
+// Las ultimas n busquedas cronometradas, de la mas nueva a la mas vieja. Las
+// interrumpidas no llegan a guardarse (ver cortarBusqueda), asi que aca no hay
+// nada que descartar.
+function busquedasDe(respuestas, n){
+  const a = [];
+  for(let i = respuestas.length-1; i >= 0 && a.length < n; i--){
+    if(typeof respuestas[i].busca === "number") a.push(respuestas[i].busca);
+  }
+  return a;
+}
 function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
 function shuffle(rng, arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
@@ -627,7 +754,12 @@ function fresh(){
   return { pid:"", anos:null, modo:"pregunta", modoAsignado:null, nivel:"medio", tamano:"mediana",
            idiomaDef:"en", inicio:Date.now(), cambiosDificultad:0,
            toquesBloqueados:0, interes:{},
-           sopasCompletadas:0, sopasSeguidas:0, detuvo:null, diario:{}, eventos:[], respuestas:[] };
+           sopasCompletadas:0, sopasSeguidas:0, detuvo:null, diario:{}, eventos:[], respuestas:[],
+           // terminadas cuenta todas las sopas, la del dia incluida: es lo que
+           // decide cuando toca preguntar el motivo
+           terminadas:0, motivo:null, motivoPreguntado:false, ultimoDia:null,
+           // la despensa solo suma; la cola es lo que todavia no llego al servidor
+           despensa:{}, disp:"", dispEnviado:false, cola:[] };
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 // Una sesion guardada antes de este build no trae los campos nuevos.
@@ -639,10 +771,29 @@ if(typeof S.toquesBloqueados !== "number") S.toquesBloqueados = 0;
 if(S.nivel !== "medio") S.nivel = "medio";
 if(S.tamano !== "mediana") S.tamano = "mediana";
 if(!S.modo) S.modo = S.modoAsignado || "pregunta"; // sesion vieja, sin ritmo guardado
+if(!S.despensa) S.despensa = {};
+if(!Array.isArray(S.cola)) S.cola = [];
+if(typeof S.dispEnviado !== "boolean") S.dispEnviado = false;
+if(typeof S.terminadas !== "number") S.terminadas = 0;
+if(typeof S.motivo !== "string") S.motivo = null;
+if(typeof S.motivoPreguntado !== "boolean") S.motivoPreguntado = false;
+// El identificador del aparato, sin nada personal adentro. Se guarda en el acto
+// y no al primer evento: si no, alguien que abre el juego y lo cierra sin jugar
+// vuelve como un aparato distinto cada vez, y una sola persona aparece como
+// muchas justo en el calculo del que depende la puerta de la fase.
+if(!S.disp){ S.disp = uuid4(); save(); }
+// Dos destinos y un solo llamado. `S.eventos` es el registro que lee y exporta
+// el moderador en la sesion de campo —vive y muere en este telefono—; `S.cola`
+// es lo que todavia no llego al servidor. Son listas distintas a proposito: la
+// del moderador no puede vaciarse porque hubo señal, y la del servidor no puede
+// quedarse corta porque la sesion fue larga.
 function ev(type, data){
-  S.eventos.push(Object.assign({ ms: Date.now()-S.inicio, type }, data||{}));
+  const ahora = Date.now();
+  S.eventos.push(Object.assign({ ms: ahora-S.inicio, type }, data||{}));
   if(S.eventos.length > 600) S.eventos.splice(0, 200);
+  S.cola = colaAgregar(S.cola, { id: uuid4(), nombre: type, ts: ahora, datos: data || {} });
   save(); renderMod();
+  despachar();
 }
 
 /* ============ generación ============ */
@@ -738,6 +889,15 @@ function varianteDiaria(anos){
 }
 const DIAS_ATRAS = 7;   // las ultimas siete quedan para el que falto
 const URL_JUEGO = "https://gab26job.github.io/sopa-de-la-abuela/";
+// Sube en cada publicacion, junto con VERSION de sw.js. Viaja en la fila del
+// aparato para poder separar cohortes cuando el juego cambia.
+const APP_VERSION = "fase1-v4";
+// El proyecto de la telemetria. La clave es la publicable —el reemplazo de la
+// vieja `anon`— y va a la vista a proposito: con la seguridad por fila que
+// instala 001-telemetria.sql, lo unico que puede hacer es insertar. No puede
+// leer nada, ni siquiera lo que ella misma escribio. La `sb_secret_` no vive
+// aca ni en el repositorio. Ver fase1/supabase/LEEME.md.
+const TELEMETRIA = { url: "https://qkyfotiluvmsrfydaegn.supabase.co", clave: "sb_publishable_v_zfjUrXezCTx_gsr4uG6A_vEI1A8EC" };
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto",
                "septiembre","octubre","noviembre","diciembre"];
 
@@ -784,6 +944,120 @@ function textoCompartible(clave, r){
 }
 function guardarDia(clave, r){ S.diario[clave] = r; save(); }
 function diaHecho(clave){ return (S.diario && S.diario[clave]) || null; }
+
+/* ============ la despensa ============ */
+// «Tienes 312 palabras guardadas.» Es el avance mas creible que tiene el juego
+// porque no es una metrica inventada: es vocabulario real. Regla de la marca:
+// **solo suma, nunca resta**. Una palabra que entro no sale, aunque despues se
+// falle — el dia que guardo queda fijo en el primero.
+function despensaSumar(desp, entrada, dia){
+  if(!desp || !entrada || !entrada.w) return false;
+  if(desp[entrada.w]) return false;
+  desp[entrada.w] = { l: entrada.l, t: entrada.t, es: entrada.a[0], dia: dia };
+  return true;
+}
+function despensaTotal(desp){ return desp ? Object.keys(desp).length : 0; }
+// Lo ultimo guardado primero: es lo que la persona reconoce y lo que da la
+// sensacion de que la lista crecio hoy.
+function despensaLista(desp){
+  return Object.keys(desp || {}).map(w => Object.assign({ w }, desp[w]))
+    .sort((a,b) => (b.dia||"").localeCompare(a.dia||"") || a.w.localeCompare(b.w));
+}
+function despensaFiltrar(lista, q){
+  const n = norm(q || "");
+  if(!n) return lista;
+  return lista.filter(x => norm(x.w).indexOf(n) >= 0 || norm(x.es).indexOf(n) >= 0);
+}
+// El hito se celebra con la voz de la abuela, no con confeti.
+const HITOS = [10, 25, 50, 100, 250, 500, 1000];
+const HITO_DICE = {
+  10:   "Diez palabras guardadas. Y hace un rato no tenías ninguna.",
+  25:   "Veinticinco. Con eso ya se pide algo en un mostrador.",
+  50:   "Cincuenta palabras, mi amor. Guardadas, no prestadas.",
+  100:  "Cien palabras. Hace un mes no te sabías ninguna de estas.",
+  250:  "Doscientas cincuenta. Ya te defiendes sola por ahí.",
+  500:  "Quinientas palabras. Eso ya dejó de ser un pasatiempo, mi amor.",
+  1000: "Mil palabras guardadas. Mil. Yo no sé si tengo mil de nada."
+};
+function hitoCruzado(antes, despues){
+  for(let i = HITOS.length - 1; i >= 0; i--)
+    if(antes < HITOS[i] && despues >= HITOS[i]) return HITOS[i];
+  return 0;
+}
+function despensaTexto(desp, url){
+  const lista = despensaLista(desp), n = lista.length;
+  const l = ["Mi despensa · Sopa de la Abuela",
+             n === 1 ? "1 palabra guardada" : n + " palabras guardadas"];
+  if(n) l.push(lista.slice(0, 8).map(x => x.w).join(" · ") + (n > 8 ? " …" : ""));
+  if(url) l.push(url);
+  return l.join("\n");
+}
+
+/* ============ el motivo declarado ============ */
+// Una pregunta, después de la primera sopa terminada: para qué quiere el
+// inglés. Hace dos trabajos por el precio de uno —enruta contenido, y le da a
+// la abuela una frase que devolver cuando alguien vuelve después de faltar— y
+// no cuesta un modelo de recomendación: cuesta cuatro botones.
+const MOTIVOS = ["viaje", "trabajo", "nietos", "gusto"];
+// La frase de recaída. En fase 1 su único destino es la abuela al empezar la
+// primera sopa del día: la notificación, que es el otro, queda explícitamente
+// fuera de esta fase.
+const MOTIVO_DICE = {
+  viaje:   "Esto te va a servir en el aeropuerto, ya vas a ver.",
+  trabajo: "Con esto te defiendes en una entrevista, mi amor.",
+  nietos:  "La próxima vez que te hablen en inglés los entiendes.",
+  gusto:   "Aprender porque sí es la mejor razón que hay."
+};
+// Se pregunta una sola vez y recién cuando ya terminó una sopa: antes de eso
+// nadie sabe todavía si el juego le importa, y la pregunta es una intrusión.
+// Si contestó «después te cuento», tampoco se vuelve: preguntar dos veces es
+// exactamente lo que convierte una conversación en un formulario.
+function motivoToca(motivo, preguntado, terminadas){
+  return !motivo && !preguntado && (terminadas || 0) >= 1;
+}
+function motivoValido(m){ return MOTIVOS.indexOf(m) >= 0; }
+
+/* ============ telemetria: la cola ============ */
+// El nucleo no conoce la red. Encola, recorta y arma lotes; quien los manda es
+// la capa de plataforma, mas abajo, y se enchufa reemplazando `despachar`.
+const COLA_TECHO = 2000;   // §5.6 del PRD: un telefono sin señal no llena el disco
+const COLA_LOTE = 50;
+// Al recortar se tira lo mas viejo que no sea de identidad: sin estas tres
+// filas, las de un aparato que estuvo semanas sin señal no se pueden leer.
+const COLA_IDENTIDAD = ["sesion_inicio", "edad_declarada", "motivo_declarado"];
+function colaAgregar(cola, item){
+  const c = (cola || []).concat([item]);
+  return c.length > COLA_TECHO ? colaRecortar(c) : c;
+}
+function colaRecortar(cola){
+  const sobra = cola.length - COLA_TECHO;
+  if(sobra <= 0) return cola;
+  const fuera = new Set();
+  for(let i = 0; i < cola.length && fuera.size < sobra; i++)
+    if(COLA_IDENTIDAD.indexOf(cola[i].nombre) < 0) fuera.add(i);
+  return cola.filter((x, i) => !fuera.has(i));
+}
+function colaLote(cola){ return (cola || []).slice(0, COLA_LOTE); }
+function colaSacar(cola, ids){
+  const fuera = new Set(ids || []);
+  return (cola || []).filter(x => !fuera.has(x.id));
+}
+// uuid v4. Recibe la fuente de azar para que la prueba pueda fijarla.
+function uuid4(rnd){
+  const r = rnd || Math.random, h = "0123456789abcdef";
+  let s = "";
+  for(let i = 0; i < 36; i++){
+    if(i === 8 || i === 13 || i === 18 || i === 23){ s += "-"; continue; }
+    if(i === 14){ s += "4"; continue; }
+    let v = Math.floor(r() * 16);
+    if(i === 19) v = (v & 0x3) | 0x8;
+    s += h[v];
+  }
+  return s;
+}
+// La capa de plataforma la reemplaza al final del archivo. Mientras tanto no
+// hace nada, que es exactamente lo que tiene que hacer el nucleo con la red.
+let despachar = function(){};
 
 /* ============ la cerradura del panel ============ */
 // El panel de moderador deja de ser un secreto de cinco toques y pasa a tener
@@ -880,6 +1154,28 @@ function say(t){ $("#say").textContent = t; }
 
 /* ============ selección ============ */
 let anchor=null, selCells=[];
+
+// ---- cronometro de busqueda ----
+// Mide lo unico que el tamano del tablero afecta de verdad: cuanto cuesta
+// encontrar la palabra en la grilla. El `ms` que ya se guardaba arranca recien
+// cuando se abre la pregunta, o sea que es el tiempo de escribir la respuesta,
+// no el de buscarla. Este corre antes: desde que la grilla queda libre hasta
+// que el dedo cierra una palabra.
+let buscaT0 = 0;
+function arrancarBusqueda(){ buscaT0 = Date.now(); }
+// Una busqueda interrumpida no es una busqueda lenta. Si la persona se fue de
+// la app, se tira el cronometro en vez de guardar un numero inventado: para
+// calibrar la escalera preferimos un dato menos a un dato malo.
+function cortarBusqueda(){ buscaT0 = 0; }
+function cerrarBusqueda(){
+  if(!buscaT0) return null;
+  const ms = Date.now() - buscaT0;
+  buscaT0 = 0;
+  return ms;
+}
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) cortarBusqueda(); else arrancarBusqueda();
+});
 function cellFromPoint(x,y){
   const rect = $("#grid").getBoundingClientRect();
   const cw = rect.width/N, ch = rect.height/N;
@@ -927,12 +1223,18 @@ $("#grid").addEventListener("pointerup", e=>{
   const rev = s.split("").reverse().join("");
   const hit = P.palabras.find(p=>!p.found && (p.e.w.toUpperCase()===s || p.e.w.toUpperCase()===rev));
   if(hit && cells.length>1){
+    hit.busca = cerrarBusqueda();
     hit.found = true; hit.cells = cells;
     cells.forEach(x=>{ const el=cellEl(x.r,x.c); if(el) el.classList.add("done"); });
     clearSel(); pintarPalabras();
-    ev("encontro", { sopa:P.idx, palabra:hit.e.w });
+    // El lado viaja con el dato: sin el, los segundos de un 8x8 y los de un
+    // 10x10 quedan en la misma bolsa y no sirven para poner ningun umbral.
+    ev("encontro", { sopa:P.idx, palabra:hit.e.w, busca_ms:hit.busca, lado:N });
     if(S.modo === "pregunta") setTimeout(()=>preguntar(hit), 260);
     else {
+      // En sopa tranquila no se abre ninguna hoja: la grilla sigue viva y la
+      // busqueda siguiente arranca en el acto.
+      arrancarBusqueda();
       const faltan = P.palabras.filter(p=>!p.found).length;
       say(faltan ? pick(Math.random, ["Esa es. Faltan "+faltan+".","Muy bien, mi amor. Quedan "+faltan+".","Vas bien. Faltan "+faltan+"."]) : "Las encontraste todas. Ahora sí, unas preguntitas.");
       if(!faltan) setTimeout(repasar, 500);
@@ -1011,8 +1313,20 @@ function evaluar(raw){
     else if(acc.some(a=>lev(n,a)===1)){ estado="casi"; msg = `<b>Casi, casi.</b> Se escribe <span class="sol">${sol}</span>.`; }
     else { estado="falla"; msg = `Es <span class="sol">${sol}</span>. No importa, mi amor, esa es difícil.`; }
   }
+  // `ms` es lo que tardo en contestar; `busca`, lo que tardo en encontrarla.
+  // Son dos cosas distintas y la escalera de tamano solo mira la segunda.
+  const busca = typeof qActual.busca === "number" ? qActual.busca : null;
   qActual.resp = { estado, sol, raw: raw||"", ms: dt };
-  S.respuestas.push({ sopa:P.idx, palabra:e.w, estado, raw: raw||"", ms: dt });
+  S.respuestas.push({ sopa:P.idx, palabra:e.w, estado, raw: raw||"", ms: dt, busca: busca });
+  // Guarda con acierto y con casi: el plan maestro dice que «casi, mi amor»
+  // cuenta como acierto, y una letra de diferencia no es no saber la palabra.
+  if(estado === "acierto" || estado === "casi"){
+    const antes = despensaTotal(S.despensa);
+    if(despensaSumar(S.despensa, e, hoyClave())){
+      const cruzo = hitoCruzado(antes, despensaTotal(S.despensa));
+      if(cruzo){ P.hito = cruzo; ev("despensa_hito", { hito:cruzo, palabras:despensaTotal(S.despensa) }); }
+    }
+  }
   ev("respuesta", { sopa:P.idx, palabra:e.w, estado, ms:dt });
   P.modoRespondido = true; pintarPalabras();
 
@@ -1036,17 +1350,31 @@ document.addEventListener("keydown", k=>{
   k.preventDefault();
   siguiente();
 });
-function cerrarSheet(){ $("#veil").classList.remove("on"); }
+// Cualquier hoja que se cierra devuelve la grilla al jugador, asi que el
+// cronometro arranca aca y no en cada pantalla por separado. Tambien tapa el
+// caso de la hoja de configuracion: el rato que estuvo ahi no cuenta como
+// busqueda.
+function cerrarSheet(){ $("#veil").classList.remove("on"); arrancarBusqueda(); }
 
 /* ============ fin de sopa ============ */
 function terminarSopa(){
   cerrarSheet();
   if(!P.dia) S.sopasCompletadas++;
-  ev("sopa_terminada", { sopa:P.idx, seguidas:S.sopasSeguidas });
+  // Esta cuenta todas. Quien solo juega la del día también terminó una sopa, y
+  // si no contara, a esa persona no se le preguntaría el motivo nunca.
+  S.terminadas = (S.terminadas || 0) + 1;
+  const segSopa = Math.max(1, Math.round((Date.now() - (P.t0 || Date.now()))/1000));
+  ev("sopa_terminada", { sopa:P.idx, seguidas:S.sopasSeguidas, seg:segSopa, lado:N });
   const rs = S.respuestas.filter(r=>r.sopa===P.idx);
   const ok = rs.filter(r=>r.estado==="acierto").length;
   const casi = rs.filter(r=>r.estado==="casi").length;
   $("#tally").innerHTML = statHTML(ok, casi, rs.length);
+
+  // El hito no interrumpe la sopa: espera al final y lo dice la abuela.
+  const hito = $("#hito");
+  hito.hidden = !P.hito;
+  if(P.hito) hito.textContent = HITO_DICE[P.hito] || "";
+  $("#verDespensaFin").hidden = despensaTotal(S.despensa) === 0;
 
   // La del dia guarda su resultado: es lo que se comparte, y es lo que deja el
   // hueco a la vista en la semana si alguien falto.
@@ -1103,7 +1431,7 @@ function statHTML(ok, casi, tot){
 $("#again").onclick = ()=>{
   S.sopasSeguidas++; save();
   ev("otra_sopa", { seguidas:S.sopasSeguidas });
-  arrancarSopa(S.sopasCompletadas);
+  siMotivoToca(()=> arrancarSopa(S.sopasCompletadas));
 };
 // TEMPORAL · atajo de prueba: adelanta a la sopa siguiente sin haberla
 // terminado, para poder ver muchas sopas seguidas. No toca las cuentas
@@ -1118,20 +1446,33 @@ $("#saltar").onclick = ()=>{
 $("#stop").onclick = ()=>{
   S.detuvo = S.sopasSeguidas + 1; save();
   ev("se_detuvo", { sopasSeguidas:S.detuvo });
-  P = null; pintarHoy(); show("inicio");
+  P = null;
+  siMotivoToca(()=>{ pintarHoy(); show("inicio"); });
 };
 
 /* ============ arranque ============ */
 function arrancarSopa(idx){
   P = nuevaSopa(idx);
   P.modoRespondido = false;
+  // Hasta ahora solo la sopa del dia se cronometraba entera; la de juego libre
+  // tambien hace falta, porque «la sopa se esta haciendo larga» es la otra
+  // mitad de la senal que mueve el tamano.
+  P.t0 = Date.now();
   pintar();
   const cuantas = ["","una","dos","tres","cuatro","cinco","seis","siete","ocho","nueve"][P.palabras.length] || P.palabras.length;
-  say(S.modo==="pregunta"
+  const base = S.modo==="pregunta"
     ? "Busca una y te pregunto. Sin apuro, ¿eh?"
-    : "Busca las " + cuantas + ", mi amor. Después charlamos.");
+    : "Busca las " + cuantas + ", mi amor. Después charlamos.";
+  // La abuela se acuerda de para qué estás acá, y lo dice en la primera sopa
+  // de cada día. Es el único lugar de la fase 1 donde el motivo se ve: la
+  // notificación, que es el otro destino de la frase, no entra en esta fase.
+  const hoy = hoyClave();
+  const vuelve = S.ultimoDia && S.ultimoDia !== hoy ? MOTIVO_DICE[S.motivo] : "";
+  if(S.ultimoDia !== hoy){ S.ultimoDia = hoy; save(); }
+  say(vuelve ? vuelve + " " + base : base);
   ev("sopa_inicio", { sopa:idx, tema:P.tema, seed:P.seed, nivel:S.nivel, tamano:S.tamano, palabras:P.palabras.length });
   show("juego");
+  arrancarBusqueda();
 }
 /* ---- nivel de inglés y tamaño de la sopa ---- */
 function pintarPistas(){
@@ -1241,7 +1582,8 @@ $("#salir").onclick = ()=>{
   $("#veil").classList.add("on");
   $("#seguir").onclick = cerrarSheet;
   $("#dejarla").onclick = ()=>{
-    ev("abandono", { sopa:P?P.idx:null, dia:P?P.dia:null, encontradas:hechas, de:P?P.palabras.length:0 });
+    ev("abandono", { sopa:P?P.idx:null, dia:P?P.dia:null, encontradas:hechas, de:P?P.palabras.length:0,
+                     seg: P && P.t0 ? Math.round((Date.now()-P.t0)/1000) : null, lado:N });
     cerrarSheet(); P = null; pintarHoy(); show("inicio");
   };
 };
@@ -1286,6 +1628,7 @@ function arrancarDiaria(clave){
     : "La sopa de hoy, mi amor. Son " + cuantas + ", sin apuro.");
   ev("diaria_inicio", { dia:clave, tema:P.tema, seed:P.seed, modo:S.modo, palabras:P.palabras.length });
   show("juego");
+  arrancarBusqueda();
 }
 async function compartir(clave){
   const r = diaHecho(clave);
@@ -1415,6 +1758,37 @@ $("#edadListo").onclick = ()=>{
   show("inicio");
 };
 
+/* ---- el motivo declarado ---- */
+// Se pregunta al salir de la pantalla de fin y no encima del resultado: el
+// momento de terminar una sopa es de quien la terminó, no de la pregunta.
+let trasMotivo = null;
+function siMotivoToca(luego){
+  if(!motivoToca(S.motivo, S.motivoPreguntado, S.terminadas)) return luego();
+  trasMotivo = luego;
+  show("motivog");
+}
+function cerrarMotivo(){
+  // Quede o no el motivo, la pregunta ya se hizo y no se repite.
+  S.motivoPreguntado = true; save();
+  const luego = trasMotivo; trasMotivo = null;
+  renderMod();
+  if(luego) luego();
+}
+$$("#motivog .motivo").forEach(b=>{
+  b.onclick = ()=>{
+    S.motivo = b.dataset.motivo;
+    ev("motivo_declarado", { motivo:S.motivo });
+    // La abuela contesta. Sin esto la pregunta se siente como un formulario que
+    // se tragó la respuesta.
+    toast(MOTIVO_DICE[S.motivo], 3400);
+    cerrarMotivo();
+  };
+});
+// «Después te cuento» no es un fracaso: es lo que la vuelve una conversación.
+// Cuántos lo eligen se lee solo, sin evento propio: son los aparatos con una
+// sopa terminada y sin `motivo_declarado`.
+$("#motivoLuego").onclick = cerrarMotivo;
+
 /* ============ moderador ============ */
 $("#pid").oninput = e=>{ S.pid=e.target.value; save(); };
 $$("#mod .modeopt").forEach(b=>{
@@ -1434,13 +1808,19 @@ function renderMod(){
   const ok = rs.filter(r=>r.estado==="acierto").length;
   const casi = rs.filter(r=>r.estado==="casi").length;
   const rend = rs.filter(r=>r.estado==="rendido").length;
-  const tiempos = rs.map(r=>r.ms).filter(Boolean).sort((a,b)=>a-b);
-  const mediana = tiempos.length ? (tiempos[Math.floor(tiempos.length/2)]/1000).toFixed(1)+" s" : "—";
+  const medResp = mediana(rs.map(r=>r.ms).filter(Boolean));
+  const respTxt = medResp ? (medResp/1000).toFixed(1)+" s" : "—";
+  // Este es el numero que hay que mirar en la sesion de campo: de aca salen el
+  // piso y el techo de la escalera de tamano.
+  const bus = busquedasDe(rs, 9999);
+  const medBus = mediana(bus);
+  const busTxt = medBus ? (medBus/1000).toFixed(1)+" s · "+bus.length+" medidas" : "—";
   $("#metrics").innerHTML = `
     <div class="kv"><span>Sopas seguidas sin que se le pida</span><span>${S.sopasSeguidas + (S.sopasCompletadas?1:0)}</span></div>
     <div class="kv"><span>Se detuvo en la sopa</span><span>${S.detuvo || "—"}</span></div>
     <div class="kv"><span>Modo</span><span>${S.modo || "—"}</span></div>
     <div class="kv"><span>Edad declarada</span><span>${edadTxt}</span></div>
+    <div class="kv"><span>Motivo declarado</span><span>${S.motivo || (S.motivoPreguntado ? "no quiso decir" : "sin preguntar")}</span></div>
     <div class="kv"><span>Eligió · nivel / tamaño</span><span>${S.nivel || "—"} / ${S.tamano || "—"}</span></div>
     <div class="kv"><span>Idioma de la definición</span><span>${S.idiomaDef === "es" ? "español" : "inglés"}</span></div>
     <div class="kv"><span>Cambios de idioma</span><span>${S.eventos.filter(x=>x.type==="cambio_idioma_def").length}</span></div>
@@ -1448,11 +1828,14 @@ function renderMod(){
     <div class="kv"><span>Aciertos / preguntas</span><span>${ok} / ${rs.length}</span></div>
     <div class="kv"><span>Casi</span><span>${casi}</span></div>
     <div class="kv"><span>«No me sale»</span><span>${rend}</span></div>
-    <div class="kv"><span>Mediana por respuesta</span><span>${mediana}</span></div>
-    <div class="kv"><span>Duración de la sesión</span><span>${Math.round((Date.now()-S.inicio)/60000)} min</span></div>`;
+    <div class="kv"><span>Mediana por respuesta</span><span>${respTxt}</span></div>
+    <div class="kv"><span>Mediana por búsqueda</span><span>${busTxt}</span></div>
+    <div class="kv"><span>Duración de la sesión</span><span>${Math.round((Date.now()-S.inicio)/60000)} min</span></div>
+    <div class="kv"><span>Palabras en la despensa</span><span>${despensaTotal(S.despensa)}</span></div>
+    <div class="kv"><span>Telemetría</span><span>${telemetriaEstado()}</span></div>`;
   $("#dump").textContent = JSON.stringify(S);
 }
-function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"), 1800); }
+function toast(t, ms){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"), ms || 1800); }
 $("#copy").onclick = async ()=>{
   const txt = JSON.stringify(S, null, 1);
   try{ await navigator.clipboard.writeText(txt); toast("Copiado"); }
@@ -1522,6 +1905,124 @@ window.addEventListener("appinstalled", ()=>{
   $("#instalar").hidden = true;
 });
 
+/* ============ la despensa: pantalla ============ */
+function pintarDespensaInicio(){
+  const n = despensaTotal(S.despensa);
+  $("#cardDesp").hidden = n === 0;
+  $("#despNum").textContent = n;
+  $("#despSub").textContent = n === 1 ? "palabra guardada" : "palabras guardadas";
+}
+function pintarDespensa(){
+  const n = despensaTotal(S.despensa);
+  $("#despTit").textContent = n === 1
+    ? "Una palabra guardada. Por algo se empieza."
+    : "Tienes " + n + " palabras guardadas.";
+  const lista = despensaFiltrar(despensaLista(S.despensa), $("#busca").value);
+  $("#despLista").innerHTML = lista.length
+    ? lista.map(x => `<div class="despfila"><b>${x.w}</b><span class="es">${x.es}</span><span class="cuando">${x.dia}</span></div>`).join("")
+    : `<p class="despvacio">Nada con eso. Prueba con otra, o mira la lista entera.</p>`;
+}
+$("#busca").addEventListener("input", pintarDespensa);
+function abrirDespensa(){
+  $("#busca").value = "";
+  pintarDespensa();
+  ev("despensa_abierta", { palabras: despensaTotal(S.despensa) });
+  show("despensa");
+}
+$("#verDespensa").onclick = abrirDespensa;
+$("#verDespensaFin").onclick = abrirDespensa;
+$("#despVolver").onclick = ()=>{ pintarDespensaInicio(); pintarHoy(); show("inicio"); };
+$("#compartirDesp").onclick = async ()=>{
+  const txt = despensaTexto(S.despensa, URL_JUEGO);
+  ev("despensa_compartida", { palabras: despensaTotal(S.despensa) });
+  if(navigator.share){
+    try{ await navigator.share({ text:txt }); return; }
+    catch(e){ if(e && e.name === "AbortError") return; }
+  }
+  try{ await navigator.clipboard.writeText(txt); toast("Copiado — pégalo donde quieras"); }
+  catch(e){ toast("No se pudo copiar"); }
+};
+
+/* ============ telemetria: el envio ============ */
+// La red vive acá y en ningún otro lado. Nada del juego la espera: `despachar`
+// dispara y se olvida, y si no hay señal la cola queda para la próxima vez que
+// se abra la app. §13.1 del PRD: nada espera al servidor para jugar.
+let enviando = false, esperaHasta = 0, castigo = 0, ultimoEnvio = null;
+function telemetriaLista(){ return !!(TELEMETRIA.url && TELEMETRIA.clave); }
+function telemetriaEstado(){
+  if(!telemetriaLista()) return "sin configurar";
+  const pend = (S.cola || []).length;
+  return pend + " en cola · " + (ultimoEnvio || "sin enviar todavía");
+}
+// No se escribe en la tabla: se llama a una función. La idempotencia de §5.6
+// —reintentar un lote dos veces no duplica nada, porque el id lo puso el
+// cliente— vive del lado de Postgres, en el `on conflict do nothing` de esas
+// funciones. El porqué está largo en supabase/001-telemetria.sql: pedirle ese
+// `on conflict` a PostgREST obliga a un INSERT ... RETURNING, y un RETURNING
+// exige poder leer la fila recién escrita, que es justo lo que `anon` no puede
+// hacer ni debe poder. Con la función, `anon` no tiene un solo privilegio
+// sobre las tablas: lo único que puede hacer es llamarla.
+async function postear(funcion, cuerpo){
+  const base = TELEMETRIA.url.replace(/\/+$/, "");
+  const r = await fetch(base + "/rest/v1/rpc/" + funcion, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: TELEMETRIA.clave,
+      Authorization: "Bearer " + TELEMETRIA.clave
+    },
+    body: JSON.stringify(cuerpo),
+    keepalive: true
+  });
+  if(!r.ok) throw new Error("http " + r.status);
+}
+async function drenar(){
+  if(enviando || !telemetriaLista()) return;
+  if(Date.now() < esperaHasta) return;
+  if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+  // Sin edad declarada no se crea la fila del aparato: la edad es el corte de
+  // la sopa del dia y del calculo de retencion, y una fila sin ella no sirve.
+  if(typeof S.anos !== "number") return;
+  if(!(S.cola || []).length) return;
+  enviando = true;
+  try{
+    if(!S.dispEnviado){
+      await postear("registrar_dispositivo", { fila: {
+        id: S.disp, plataforma: "web", version_app: APP_VERSION,
+        anos: S.anos, motivo: S.motivo || null
+      }});
+      S.dispEnviado = true; save();
+    }
+    for(let vuelta = 0; vuelta < 4 && S.cola.length; vuelta++){
+      const lote = colaLote(S.cola);
+      await postear("registrar_eventos", { lote: lote.map(e => ({
+        id: e.id, dispositivo: S.disp, nombre: e.nombre,
+        // Dos relojes: este es el del telefono. El del servidor lo pone Postgres
+        // solo, y es el unico que se usa para calcular retencion.
+        ts_cliente: new Date(e.ts).toISOString(),
+        datos: e.datos || {}
+      })) });
+      S.cola = colaSacar(S.cola, lote.map(e => e.id));
+      save();
+    }
+    castigo = 0;
+    ultimoEnvio = new Date().toLocaleTimeString();
+  }catch(e){
+    // Se queda todo en la cola y se reintenta mas tarde, cada vez mas espaciado.
+    castigo = Math.min(castigo + 1, 5);
+    esperaHasta = Date.now() + 15000 * Math.pow(2, castigo - 1);
+  }finally{
+    enviando = false;
+    renderMod();
+  }
+}
+// La cola se vacia al abrir la app, al volver la señal y al irse a segundo
+// plano — no mientras se juega.
+despachar = function(){};
+window.addEventListener("online", ()=>{ esperaHasta = 0; castigo = 0; drenar(); });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "hidden") drenar(); });
+window.addEventListener("pagehide", drenar);
+
 /* ============ init ============ */
 $("#pid").value = S.pid || "";
 if(S.modoAsignado) $$("#mod .modeopt").forEach(x=>x.setAttribute("aria-pressed", x.dataset.fmode===S.modoAsignado ? "true":"false"));
@@ -1529,6 +2030,13 @@ if(!NIVELES[S.nivel]) S.nivel = "facil";
 if(!TAMANOS[S.tamano]) S.tamano = "mediana";
 pintarPistas();
 pintarHoy();
+pintarDespensaInicio();
+// Ojo con enchufarle `drenar` a `despachar` acá: `ev()` lo llama en cada
+// evento, y eso pondría un POST por cada palabra encontrada. Va contra §5.6
+// del PRD —«se vacía al abrir, no al jugar»— y contra el público que este
+// juego eligió, que paga los datos caros. La cola se vacía en los cuatro
+// momentos de arriba y en este.
+drenar();
 if(new URLSearchParams(location.search).get("mod")==="1") pedirLlave("abrir");
 else if(typeof S.anos !== "number") pedirEdad();
 renderMod();
