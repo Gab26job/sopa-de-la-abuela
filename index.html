@@ -759,7 +759,8 @@ function fresh(){
            // decide cuando toca preguntar el motivo
            terminadas:0, motivo:null, motivoPreguntado:false, ultimoDia:null,
            // la despensa solo suma; la cola es lo que todavia no llego al servidor
-           despensa:{}, disp:"", dispEnviado:false, cola:[] };
+           // leitner es la lista de deudas: palabra → { caja, proxima }
+           despensa:{}, leitner:{}, disp:"", dispEnviado:false, cola:[] };
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 // Una sesion guardada antes de este build no trae los campos nuevos.
@@ -772,6 +773,7 @@ if(S.nivel !== "medio") S.nivel = "medio";
 if(S.tamano !== "mediana") S.tamano = "mediana";
 if(!S.modo) S.modo = S.modoAsignado || "pregunta"; // sesion vieja, sin ritmo guardado
 if(!S.despensa) S.despensa = {};
+if(!S.leitner) S.leitner = {};
 if(!Array.isArray(S.cola)) S.cola = [];
 if(typeof S.dispEnviado !== "boolean") S.dispEnviado = false;
 if(typeof S.terminadas !== "number") S.terminadas = 0;
@@ -796,6 +798,52 @@ function ev(type, data){
   despachar();
 }
 
+/* ============ repaso espaciado — las cuatro cajas (§5.5) ============ */
+// No hace falta SM-2: el generador ya tiene que elegir palabras que quepan en
+// la grilla, y esa restriccion manda. Cuatro cajas y dos limites duros.
+const LEITNER_DIAS = { 1:1, 2:3, 3:7, 4:30 };
+const LEITNER_TOPE = 0.4;   // el repaso nunca pasa del 40% de una sopa
+
+// Cuenta dias, no milisegundos, por la misma razon que numeroDia: el horario de
+// verano no puede correrle el repaso a nadie.
+function sumarDias(clave, n){
+  const [a,m,d] = clave.split("-").map(Number);
+  const t = new Date(Date.UTC(a, m-1, d) + n*86400000);
+  const z = x => (x<10?"0":"")+x;
+  return t.getUTCFullYear()+"-"+z(t.getUTCMonth()+1)+"-"+z(t.getUTCDate());
+}
+// Al fallar vuelve a la caja 1, venga de donde venga. Al acertar sube una, y de
+// la cuatro sale a «sabida», que aca es dejar de estar en la lista. Devuelve la
+// caja en la que quedo; cero es no estar.
+function leitnerAnotar(L, palabra, acerto, hoy){
+  const actual = L[palabra];
+  if(!acerto){ L[palabra] = { caja:1, proxima: sumarDias(hoy, LEITNER_DIAS[1]) }; return 1; }
+  // La que se acerto de una y nunca fallo no entra: la lista es de deudas, no
+  // un registro de todo lo jugado. Para eso esta la despensa.
+  if(!actual) return 0;
+  const caja = actual.caja + 1;
+  if(caja > 4){ delete L[palabra]; return 0; }
+  L[palabra] = { caja, proxima: sumarDias(hoy, LEITNER_DIAS[caja]) };
+  return caja;
+}
+// Las que ya tocan, la mas atrasada primero y con la caja mas baja como
+// desempate: si hay que elegir, primero la que peor se sabe. El tercer criterio
+// es alfabetico y esta para que el orden sea siempre el mismo.
+function leitnerVencidas(L, hoy){
+  const n = numeroDia(hoy);
+  return Object.keys(L || {})
+    .filter(w => L[w] && numeroDia(L[w].proxima) <= n)
+    .sort((a,b) => numeroDia(L[a].proxima) - numeroDia(L[b].proxima)
+                || L[a].caja - L[b].caja
+                || (a < b ? -1 : 1));
+}
+function leitnerTope(palabras){ return Math.floor(palabras * LEITNER_TOPE); }
+function leitnerCuenta(L){
+  const c = { 1:0, 2:0, 3:0, 4:0, total:0 };
+  Object.keys(L || {}).forEach(w => { const x = L[w]; if(x && c[x.caja] != null){ c[x.caja]++; c.total++; } });
+  return c;
+}
+
 /* ============ generación ============ */
 let P = null;
 // La sopa del dia le pasa semilla, tema y dificultad propias; el juego libre
@@ -812,9 +860,27 @@ function nuevaSopa(idx, opts){
   const tema = o.tema || temas[idx % temas.length];
   const base = CORPUS.entradas.filter(e => e.t===tema && e.w.length>=4 && e.w.length<=tam.max);
 
+  // §5.5: primero las que tocan repasar, hasta el tope del 40%. Se eligen del
+  // tema de la sopa —`base` ya viene filtrado por tema y por largo—, porque una
+  // palabra de la cocina dentro de una sopa de ropa seria el unico modo de que
+  // alguien note que hay un sistema detras, y el repaso no se anuncia nunca.
+  // La sopa del dia queda afuera: sale entera de la semilla, es identica para
+  // cualquiera que la juegue ese dia, y es lo que se comparte. Meterle las
+  // deudas de uno la volveria personal y el compartible dejaria de comparar.
+  let deRepaso = [];
+  if(!o.dia){
+    const vencidas = leitnerVencidas(S.leitner, o.hoy || hoyClave());
+    const tope = leitnerTope(WORDS_PER);
+    for(const w of vencidas){
+      if(deRepaso.length >= tope) break;
+      const e = base.find(x => x.w === w);
+      if(e) deRepaso.push(e);
+    }
+  }
+
   // Se llena por bandas en orden de prioridad: primero la del nivel, y solo se
   // baja a la siguiente cuando el tema no da para mas.
-  let elegidas = [];
+  let elegidas = deRepaso.slice();
   for(const banda of niv.bandas){
     if(elegidas.length >= WORDS_PER) break;
     // Un nivel puede ponerle tope a una banda —«de B2, no mas de cuatro»—. Sin
@@ -838,6 +904,7 @@ function nuevaSopa(idx, opts){
   }
 
   return { idx, seed, tema, nivel, tamano, dia: o.dia || null, variante: o.variante || null,
+           repaso: elegidas.filter(e => deRepaso.indexOf(e) >= 0).length,
            palabras: elegidas.map((e,i)=>({ e, found:false, resp:null, cells:cells[i]||[] })), grid };
 }
 function armar(rng, words){
@@ -891,7 +958,7 @@ const DIAS_ATRAS = 7;   // las ultimas siete quedan para el que falto
 const URL_JUEGO = "https://gab26job.github.io/sopa-de-la-abuela/";
 // Sube en cada publicacion, junto con VERSION de sw.js. Viaja en la fila del
 // aparato para poder separar cohortes cuando el juego cambia.
-const APP_VERSION = "fase1-v4";
+const APP_VERSION = "fase1-v5";
 // El proyecto de la telemetria. La clave es la publicable —el reemplazo de la
 // vieja `anon`— y va a la vista a proposito: con la seguridad por fila que
 // instala 001-telemetria.sql, lo unico que puede hacer es insertar. No puede
@@ -1327,6 +1394,10 @@ function evaluar(raw){
       if(cruzo){ P.hito = cruzo; ev("despensa_hito", { hito:cruzo, palabras:despensaTotal(S.despensa) }); }
     }
   }
+  // §5.3: «la palabra fallada entra a la caja 1 de Leitner y vuelve sola».
+  // Acierto y «casi» cuentan igual que en la despensa: una letra de diferencia
+  // no es no saber la palabra.
+  leitnerAnotar(S.leitner, e.w, estado === "acierto" || estado === "casi", hoyClave());
   ev("respuesta", { sopa:P.idx, palabra:e.w, estado, ms:dt });
   P.modoRespondido = true; pintarPalabras();
 
@@ -1471,6 +1542,9 @@ function arrancarSopa(idx){
   if(S.ultimoDia !== hoy){ S.ultimoDia = hoy; save(); }
   say(vuelve ? vuelve + " " + base : base);
   ev("sopa_inicio", { sopa:idx, tema:P.tema, seed:P.seed, nivel:S.nivel, tamano:S.tamano, palabras:P.palabras.length });
+  // Sin esto no hay forma de saber si el repaso llego a existir en la calle ni
+  // si el tope del 40% se respeta con gente de verdad.
+  if(P.repaso) ev("repaso_servido", { sopa:idx, repaso:P.repaso, de:P.palabras.length });
   show("juego");
   arrancarBusqueda();
 }
@@ -1832,6 +1906,7 @@ function renderMod(){
     <div class="kv"><span>Mediana por búsqueda</span><span>${busTxt}</span></div>
     <div class="kv"><span>Duración de la sesión</span><span>${Math.round((Date.now()-S.inicio)/60000)} min</span></div>
     <div class="kv"><span>Palabras en la despensa</span><span>${despensaTotal(S.despensa)}</span></div>
+    <div class="kv"><span>En repaso · cajas 1/2/3/4</span><span>${(()=>{const c=leitnerCuenta(S.leitner);return c.total ? c.total+" · "+c[1]+"/"+c[2]+"/"+c[3]+"/"+c[4] : "—";})()}</span></div>
     <div class="kv"><span>Telemetría</span><span>${telemetriaEstado()}</span></div>`;
   $("#dump").textContent = JSON.stringify(S);
 }
