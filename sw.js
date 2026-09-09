@@ -4,7 +4,7 @@
 //
 // Al cambiar el juego hay que subir VERSION, o los teléfonos que ya lo tienen
 // guardado siguen jugando el build viejo.
-const VERSION = "sopa-fase1-v5";
+const VERSION = "sopa-fase1-v6";
 
 const BASICOS = [
   "./",
